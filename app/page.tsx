@@ -1,10 +1,30 @@
 "use client";
+import LiquidEther from "@/components/LiquidEther";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-black text-white">
+      <div style={{ width: "100%", height: "100vh", position: "fixed" }}>
+        <LiquidEther
+          colors={["#0F0A0A", "#E6200A", "#F0E6A3"]}
+          mouseForce={20}
+          cursorSize={100}
+          isViscous
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+        />
+      </div>
       {/* Header */}
-      <header className="border-b border-gray-800">
+      <header className="border-b border-gray-800 z-10">
         <div className="max-w-5xl mx-auto px-8 py-6 flex justify-between items-center">
           <h1 className="text-xl font-semibold">Community</h1>
           <nav className="flex gap-8 text-sm">
