@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import type { Unit } from "@/types/database.types";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
@@ -17,7 +20,24 @@ export default function SignUpPage() {
   );
   const [message, setMessage] = useState({ type: "", text: "" });
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+
+  // Fetch available units on component mount
+  useEffect(() => {
+    const fetchUnits = async () => {
+      const { data, error } = await supabase
+        .from("units")
+        .select("*")
+        .order("name");
+
+      if (data && !error) {
+        setUnits(data);
+      }
+    };
+
+    fetchUnits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check username availability in real-time as user types
   useEffect(() => {
@@ -51,7 +71,8 @@ export default function SignUpPage() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [username, supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +117,16 @@ export default function SignUpPage() {
       return;
     }
 
+    // Validate unit selection
+    if (!selectedUnit) {
+      setMessage({
+        type: "error",
+        text: "Please select a unit to join",
+      });
+      setLoading(false);
+      return;
+    }
+
     // Double-check username availability before signup
     const { data: existingUser, error: checkError } = await supabase
       .from("profiles")
@@ -124,7 +155,7 @@ export default function SignUpPage() {
     }
 
     // Proceed with signup
-    const { data, error } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -135,10 +166,42 @@ export default function SignUpPage() {
       },
     });
 
-    if (error) {
-      setMessage({ type: "error", text: error.message });
+    if (authError) {
+      setMessage({ type: "error", text: authError.message });
       setLoading(false);
-    } else {
+      return;
+    }
+
+    if (authData.user) {
+      // Prepare profile data
+      const profileData: any = {
+        id: authData.user.id,
+        email: email,
+        username: username.toLowerCase(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Only add unit_id if a unit was selected
+      if (selectedUnit) {
+        profileData.unit_id = selectedUnit;
+      }
+
+      // Use upsert to handle the profile (trigger may have already created it)
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert(profileData, {
+          onConflict: "id",
+        });
+
+      if (profileError) {
+        setMessage({
+          type: "error",
+          text: "Error creating profile: " + profileError.message,
+        });
+        setLoading(false);
+        return;
+      }
+
       // Check if user is immediately confirmed (email confirmation disabled)
       const { data: session } = await supabase.auth.getSession();
 
@@ -165,6 +228,7 @@ export default function SignUpPage() {
       setEmail("");
       setPassword("");
       setConfirmPassword("");
+      setSelectedUnit("");
       setUsernameAvailable(null);
     }
   };
@@ -313,6 +377,31 @@ export default function SignUpPage() {
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="you@example.com"
               />
+            </div>
+
+            {/* Unit Selection Dropdown */}
+            <div>
+              <label
+                htmlFor="unit"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Choose your unit
+              </label>
+              <select
+                id="unit"
+                name="unit"
+                required
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              >
+                <option value="">Select a unit...</option>
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.name} - {unit.description}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
