@@ -1,38 +1,35 @@
 "use client";
+import localFont from "next/font/local";
+import { Rethink_Sans } from "next/font/google";
+
+const rethinkSans = Rethink_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const modernSociety = localFont({
+  src: "../public/fonts/ModernSociety-Regular.otf",
+});
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 z-10">
-        <div className="max-w-5xl mx-auto px-8 py-6 flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Community</h1>
-          <nav className="flex gap-8 text-sm">
-            <a href="#about" className="hover:text-red-600 transition-colors">
-              About
-            </a>
-            <a href="#join" className="hover:text-red-600 transition-colors">
-              Join
-            </a>
-            <a href="#contact" className="hover:text-red-600 transition-colors">
-              Contact
-            </a>
-          </nav>
-        </div>
-      </header>
-
+    <div
+      className={`${rethinkSans.className} min-h-screen bg-black text-white`}
+    >
       {/* Hero Section */}
-      <section className="max-w-5xl mx-auto px-8 py-32">
-        <h2 className="text-6xl font-bold mb-6 leading-tight">
+      <section className="max-w-6xl mx-auto px-8 py-52 min-h-screen">
+        <h2 className="text-7xl font-medium mb-6 leading-tight">
           Welcome to
           <br />
-          <span className="text-red-600">Ypsilon</span>
+          <span className={`${modernSociety.className} text-red-600 text-8xl`}>
+            the name.
+          </span>
         </h2>
         <p className="text-lg text-gray-400 mb-10 max-w-xl">
           A place for like-minded people to connect, share ideas, and grow
           together.
         </p>
-        <button className="bg-red-600 hover:bg-red-700 px-8 py-3 text-sm font-medium transition-colors">
+        <button className=" rounded-md border-2 border-red-600 hover:bg-red-600 px-8 py-3 text-sm font-medium transition-colors">
           Join Now
         </button>
       </section>
