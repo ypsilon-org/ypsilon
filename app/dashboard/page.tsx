@@ -6,33 +6,33 @@ import SignOut from "@/components/SignOut";
 const UNIT_COLORS = {
   Einherjar: {
     primary: "#6FF3FF",
-    light: "#DFFBFF",
-    dark: "#29848e",
-    text: "#08343A",
+    light: "#E0FCFF",
+    dark: "#00B8CC",
+    text: "#004D57",
   },
   "Legio X Equestris": {
     primary: "#8A3FFC",
-    light: "#E6D9FF",
-    dark: "#5A23B0",
-    text: "#2A0E4F",
+    light: "#F0E6FF",
+    dark: "#6929C4",
+    text: "#2D1A52",
   },
   Myrmidons: {
     primary: "#A6FF00",
-    light: "#ECFFD1",
-    dark: "#5FAE00",
-    text: "#1F3300",
+    light: "#F0FFD6",
+    dark: "#7ABE00",
+    text: "#2D4000",
   },
   "Narayani Sena": {
     primary: "#FFC83D",
-    light: "#FFF1C2",
-    dark: "#C99700",
-    text: "#3D2A00",
+    light: "#FFF5E0",
+    dark: "#E09600",
+    text: "#5C3D00",
   },
   Spartans: {
     primary: "#FF6A00",
-    light: "#FFE2CC",
-    dark: "#C94F00",
-    text: "#3B1A00",
+    light: "#FFE8D6",
+    dark: "#CC5500",
+    text: "#5C2800",
   },
 };
 
@@ -57,9 +57,20 @@ export default async function DashboardPage() {
   // Get user profile with unit information
   const { data: profile } = await supabase
     .from("profiles_with_units")
-    .select("username, full_name, unit_name, unit_description")
+    .select("username, full_name, unit_name, unit_description, unit_id")
     .eq("id", user.id)
     .single();
+
+  // Get count of members in the same unit
+  let unitMemberCount = 0;
+  if (profile?.unit_id) {
+    const { count } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("unit_id", profile.unit_id);
+
+    unitMemberCount = count || 0;
+  }
 
   // Get colors for the user's unit
   const unitColors =
@@ -202,7 +213,7 @@ export default async function DashboardPage() {
 
           {/* Unit Stats or Additional Info Cards */}
           {profile?.unit_name && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div
                 className="rounded-lg p-6 shadow"
                 style={{
@@ -220,9 +231,12 @@ export default async function DashboardPage() {
                   className="text-3xl font-bold"
                   style={{ color: unitColors.primary }}
                 >
-                  ---
+                  {unitMemberCount}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Coming soon</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {unitMemberCount === 1 ? "warrior" : "warriors"} in{" "}
+                  {profile.unit_name}
+                </p>
               </div>
 
               <div
@@ -242,31 +256,11 @@ export default async function DashboardPage() {
                   className="text-3xl font-bold"
                   style={{ color: unitColors.primary }}
                 >
-                  ---
+                  Recruit
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Coming soon</p>
-              </div>
-
-              <div
-                className="rounded-lg p-6 shadow"
-                style={{
-                  background: "white",
-                  borderLeft: `4px solid ${unitColors.primary}`,
-                }}
-              >
-                <h3
-                  className="font-semibold text-lg mb-2"
-                  style={{ color: unitColors.text }}
-                >
-                  Achievements
-                </h3>
-                <p
-                  className="text-3xl font-bold"
-                  style={{ color: unitColors.primary }}
-                >
-                  0
+                <p className="text-sm text-gray-500 mt-1">
+                  Keep training to advance
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Start your journey</p>
               </div>
             </div>
           )}

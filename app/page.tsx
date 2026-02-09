@@ -64,6 +64,7 @@ export default function HomePage() {
           waveSpeed={0.05}
         />
       </div> */}
+
       <section className="px-60 mx-auto py-56 min-h-screen z-10 -pt-[600px] backdrop-blur-xs">
         <h2 className="text-7xl font-medium mb-6 leading-tight">
           Welcome to
