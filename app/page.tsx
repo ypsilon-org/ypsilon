@@ -1,6 +1,8 @@
 "use client";
 import localFont from "next/font/local";
 import { Rethink_Sans } from "next/font/google";
+// import FaultyTerminal from "@/components/FaultyTerminal";
+// import Dither from "@/components/Dither";
 
 const rethinkSans = Rethink_Sans({
   subsets: ["latin"],
@@ -13,11 +15,56 @@ const modernSociety = localFont({
 
 export default function HomePage() {
   return (
-    <div
-      className={`${rethinkSans.className} min-h-screen bg-black text-white`}
-    >
-      {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-8 py-52 min-h-screen">
+    <div className={`${rethinkSans.className} min-h-screen text-white`}>
+      {/* <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          zIndex: -1,
+        }}
+      >
+        <FaultyTerminal
+          scale={1.5}
+          gridMul={[2, 1]}
+          digitSize={1.2}
+          timeScale={0.5}
+          pause={false}
+          scanlineIntensity={0.5}
+          glitchAmount={1}
+          flickerAmount={1}
+          noiseAmp={1}
+          chromaticAberration={0}
+          dither={0}
+          curvature={0.1}
+          tint="#dc2626"
+          mouseReact
+          mouseStrength={0.5}
+          pageLoadAnimation
+          brightness={0.6}
+        />
+      </div> */}
+
+      {/* <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          zIndex: -1,
+        }}
+      >
+        <Dither
+          waveColor={[0.5, 0.5, 0.5]}
+          disableAnimation={false}
+          enableMouseInteraction
+          mouseRadius={0.3}
+          colorNum={4}
+          waveAmplitude={0.3}
+          waveFrequency={3}
+          waveSpeed={0.05}
+        />
+      </div> */}
+      <section className="px-60 mx-auto py-56 min-h-screen z-10 -pt-[600px] backdrop-blur-xs">
         <h2 className="text-7xl font-medium mb-6 leading-tight">
           Welcome to
           <br />
