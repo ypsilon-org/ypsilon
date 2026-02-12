@@ -7,41 +7,29 @@ import Link from "next/link";
 const UNIT_COLORS = {
   Einherjar: {
     primary: "#6FF3FF",
-    light: "#E0FCFF",
-    dark: "#00B8CC",
-    text: "#004D57",
+    text: "#6FF3FF",
   },
   "Legio X Equestris": {
     primary: "#8A3FFC",
-    light: "#F0E6FF",
-    dark: "#6929C4",
-    text: "#2D1A52",
+    text: "#8A3FFC",
   },
   Myrmidons: {
     primary: "#A6FF00",
-    light: "#F0FFD6",
-    dark: "#7ABE00",
-    text: "#2D4000",
+    text: "#A6FF00",
   },
   "Narayani Sena": {
     primary: "#FFC83D",
-    light: "#FFF5E0",
-    dark: "#E09600",
-    text: "#5C3D00",
+    text: "#FFC83D",
   },
   Spartans: {
     primary: "#FF6A00",
-    light: "#FFE8D6",
-    dark: "#CC5500",
-    text: "#5C2800",
+    text: "#FF6A00",
   },
 };
 
 const DEFAULT_COLORS = {
   primary: "#3B82F6",
-  light: "#EFF6FF",
-  dark: "#1E40AF",
-  text: "#1E3A8A",
+  text: "#3B82F6",
 };
 
 export default async function LeaderDashboard() {
@@ -91,34 +79,30 @@ export default async function LeaderDashboard() {
       : DEFAULT_COLORS;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0B1120] text-white">
       {/* Navigation Bar */}
-      <nav
-        className="shadow"
-        style={{
-          background: `linear-gradient(135deg, ${unitColors.primary} 0%, ${unitColors.dark} 100%)`,
-        }}
-      >
+      <nav className="border-b border-gray-800 bg-[#1A2332]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
               <h1 className="text-xl font-bold text-white">
                 {profile.unit_name} - Leader Dashboard
               </h1>
               <span
-                className="px-3 py-1 rounded-full text-xs font-bold"
+                className="px-3 py-1 rounded-lg text-xs font-bold border"
                 style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  color: "white",
+                  borderColor: unitColors.primary,
+                  color: unitColors.text,
+                  backgroundColor: `${unitColors.primary}20`,
                 }}
               >
                 COMMANDER
               </span>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="text-white hover:text-gray-200 text-sm font-medium"
+                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
               >
                 My Profile
               </Link>
@@ -128,29 +112,19 @@ export default async function LeaderDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0 space-y-6">
           {/* Welcome Card */}
-          <div
-            className="rounded-lg shadow-lg overflow-hidden mb-6"
-            style={{
-              background: "white",
-              borderTop: `4px solid ${unitColors.primary}`,
-            }}
-          >
+          <div className="bg-[#1A2332] rounded-xl border border-gray-800 overflow-hidden">
             <div
-              className="p-6"
-              style={{
-                background: `linear-gradient(to bottom, ${unitColors.light} 0%, white 100%)`,
-              }}
-            >
-              <h2
-                className="text-3xl font-bold mb-2"
-                style={{ color: unitColors.text }}
-              >
+              className="h-1 w-full"
+              style={{ backgroundColor: unitColors.primary }}
+            ></div>
+            <div className="p-8">
+              <h2 className="text-3xl font-bold mb-2 text-white">
                 Welcome, Commander @{profile.username}
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-400 text-base">
                 You are the leader of {profile.unit_name}. Use this dashboard to
                 oversee your unit and its members.
               </p>
@@ -158,33 +132,27 @@ export default async function LeaderDashboard() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Members */}
-            <div
-              className="rounded-lg p-6 shadow-lg"
-              style={{
-                background: "white",
-                borderLeft: `4px solid ${unitColors.primary}`,
-              }}
-            >
+            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
+                  <p className="text-sm font-medium text-gray-400 mb-2">
                     Total Warriors
                   </p>
                   <p
                     className="text-4xl font-bold"
-                    style={{ color: unitColors.primary }}
+                    style={{ color: unitColors.text }}
                   >
                     {totalMembers || 0}
                   </p>
                 </div>
                 <div
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: unitColors.light }}
+                  className="w-14 h-14 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${unitColors.primary}20` }}
                 >
                   <svg
-                    className="w-8 h-8"
+                    className="w-7 h-7"
                     style={{ color: unitColors.primary }}
                     fill="none"
                     stroke="currentColor"
@@ -202,31 +170,25 @@ export default async function LeaderDashboard() {
             </div>
 
             {/* Recent Recruits */}
-            <div
-              className="rounded-lg p-6 shadow-lg"
-              style={{
-                background: "white",
-                borderLeft: `4px solid ${unitColors.primary}`,
-              }}
-            >
+            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
+                  <p className="text-sm font-medium text-gray-400 mb-2">
                     New Recruits (7 days)
                   </p>
                   <p
                     className="text-4xl font-bold"
-                    style={{ color: unitColors.primary }}
+                    style={{ color: unitColors.text }}
                   >
                     {recentMembers || 0}
                   </p>
                 </div>
                 <div
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: unitColors.light }}
+                  className="w-14 h-14 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${unitColors.primary}20` }}
                 >
                   <svg
-                    className="w-8 h-8"
+                    className="w-7 h-7"
                     style={{ color: unitColors.primary }}
                     fill="none"
                     stroke="currentColor"
@@ -244,31 +206,25 @@ export default async function LeaderDashboard() {
             </div>
 
             {/* Unit Status */}
-            <div
-              className="rounded-lg p-6 shadow-lg"
-              style={{
-                background: "white",
-                borderLeft: `4px solid ${unitColors.primary}`,
-              }}
-            >
+            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
+                  <p className="text-sm font-medium text-gray-400 mb-2">
                     Unit Status
                   </p>
                   <p
-                    className="text-2xl font-bold"
-                    style={{ color: unitColors.primary }}
+                    className="text-4xl font-bold"
+                    style={{ color: unitColors.text }}
                   >
                     Active
                   </p>
                 </div>
                 <div
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: unitColors.light }}
+                  className="w-14 h-14 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${unitColors.primary}20` }}
                 >
                   <svg
-                    className="w-8 h-8"
+                    className="w-7 h-7"
                     style={{ color: unitColors.primary }}
                     fill="none"
                     stroke="currentColor"
@@ -287,65 +243,51 @@ export default async function LeaderDashboard() {
           </div>
 
           {/* Unit Members List */}
-          <div
-            className="rounded-lg shadow-lg overflow-hidden"
-            style={{
-              background: "white",
-              borderTop: `4px solid ${unitColors.primary}`,
-            }}
-          >
+          <div className="bg-[#1A2332] rounded-xl border border-gray-800 overflow-hidden">
             <div
-              className="p-6"
-              style={{
-                background: `linear-gradient(to bottom, ${unitColors.light} 0%, white 100%)`,
-              }}
-            >
-              <h3
-                className="text-2xl font-bold mb-4"
-                style={{ color: unitColors.text }}
-              >
+              className="h-1 w-full"
+              style={{ backgroundColor: unitColors.primary }}
+            ></div>
+            <div className="p-8">
+              <h3 className="text-2xl font-bold mb-6 text-white">
                 Unit Roster
               </h3>
 
               {unitMembers && unitMembers.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto rounded-lg border border-gray-800">
+                  <table className="min-w-full divide-y divide-gray-800">
                     <thead>
-                      <tr>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <tr className="bg-[#0B1120]">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Username
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Email
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Role
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Joined
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-800">
                       {unitMembers.map((member) => (
                         <tr
                           key={member.id}
-                          className="hover:bg-gray-50 transition-colors"
+                          className="hover:bg-[#0B1120]/50 transition-colors"
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div
-                                className="w-2 h-2 rounded-full mr-2"
-                                style={{ backgroundColor: unitColors.primary }}
-                              ></div>
-                              <span className="text-sm font-medium text-gray-900">
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-medium text-white">
                                 @{member.username}
                               </span>
                               {member.is_leader && (
                                 <span
-                                  className="ml-2 px-2 py-1 text-xs font-bold rounded"
+                                  className="px-2 py-1 text-xs font-bold rounded"
                                   style={{
-                                    backgroundColor: unitColors.light,
+                                    backgroundColor: `${unitColors.primary}20`,
                                     color: unitColors.text,
                                   }}
                                 >
@@ -354,13 +296,13 @@ export default async function LeaderDashboard() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {member.email}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             {member.is_leader ? "Commander" : "Warrior"}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {new Date(member.created_at).toLocaleDateString()}
                           </td>
                         </tr>
@@ -369,8 +311,27 @@ export default async function LeaderDashboard() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">
+                <div className="text-center py-16">
+                  <div
+                    className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4"
+                    style={{ backgroundColor: `${unitColors.primary}15` }}
+                  >
+                    <svg
+                      className="w-8 h-8"
+                      style={{ color: unitColors.primary }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400">
                     No members found in your unit yet.
                   </p>
                 </div>

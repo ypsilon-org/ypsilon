@@ -22,7 +22,6 @@ export default function SignUpPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
-  // Fetch available units on component mount
   useEffect(() => {
     const fetchUnits = async () => {
       const { data, error } = await supabase
@@ -36,10 +35,8 @@ export default function SignUpPage() {
     };
 
     fetchUnits();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [supabase]);
 
-  // Check username availability in real-time as user types
   useEffect(() => {
     const checkUsername = async () => {
       if (username.length < 3) {
@@ -56,7 +53,6 @@ export default function SignUpPage() {
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
-        // Error other than "no rows found"
         setUsernameAvailable(null);
       } else {
         setUsernameAvailable(!existingUser);
@@ -65,21 +61,18 @@ export default function SignUpPage() {
       setCheckingUsername(false);
     };
 
-    // Debounce the check - wait 500ms after user stops typing
     const timeoutId = setTimeout(() => {
       checkUsername();
     }, 500);
 
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  }, [username, supabase]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    // Validate username
     if (username.length < 3) {
       setMessage({
         type: "error",
@@ -89,7 +82,6 @@ export default function SignUpPage() {
       return;
     }
 
-    // Validate username format (optional - only letters, numbers, underscore)
     const usernamePattern = /^[a-zA-Z0-9_]+$/;
     if (!usernamePattern.test(username)) {
       setMessage({
@@ -100,14 +92,12 @@ export default function SignUpPage() {
       return;
     }
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setMessage({ type: "error", text: "Passwords do not match" });
       setLoading(false);
       return;
     }
 
-    // Validate password length
     if (password.length < 6) {
       setMessage({
         type: "error",
@@ -117,7 +107,6 @@ export default function SignUpPage() {
       return;
     }
 
-    // Validate unit selection
     if (!selectedUnit) {
       setMessage({
         type: "error",
@@ -127,14 +116,12 @@ export default function SignUpPage() {
       return;
     }
 
-    // Double-check username availability before signup
     const { data: existingUser, error: checkError } = await supabase
       .from("profiles")
       .select("username")
       .eq("username", username.toLowerCase())
       .maybeSingle();
 
-    // If there's an error other than "no rows found", show it
     if (checkError && checkError.code !== "PGRST116") {
       setMessage({
         type: "error",
@@ -154,7 +141,6 @@ export default function SignUpPage() {
       return;
     }
 
-    // Proceed with signup
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -173,7 +159,6 @@ export default function SignUpPage() {
     }
 
     if (authData.user) {
-      // Prepare profile data
       const profileData: any = {
         id: authData.user.id,
         email: email,
@@ -181,12 +166,10 @@ export default function SignUpPage() {
         updated_at: new Date().toISOString(),
       };
 
-      // Only add unit_id if a unit was selected
       if (selectedUnit) {
         profileData.unit_id = selectedUnit;
       }
 
-      // Use upsert to handle the profile (trigger may have already created it)
       const { error: profileError } = await supabase
         .from("profiles")
         .upsert(profileData, {
@@ -202,11 +185,9 @@ export default function SignUpPage() {
         return;
       }
 
-      // Check if user is immediately confirmed (email confirmation disabled)
       const { data: session } = await supabase.auth.getSession();
 
       if (session?.session) {
-        // User is auto-confirmed and signed in
         setMessage({
           type: "success",
           text: "Account created successfully! Redirecting...",
@@ -216,7 +197,6 @@ export default function SignUpPage() {
           router.refresh();
         }, 1000);
       } else {
-        // Email confirmation is required
         setMessage({
           type: "success",
           text: "Success! Check your email for the confirmation link.",
@@ -233,21 +213,13 @@ export default function SignUpPage() {
     }
   };
 
-  // Username validation indicator
   const getUsernameIndicator = () => {
-    if (username.length < 3) {
-      return null;
-    }
+    if (username.length < 3) return null;
 
     if (checkingUsername) {
       return (
-        <p className="text-sm text-gray-500 mt-1 flex items-center">
-          <svg
-            className="animate-spin h-4 w-4 mr-2"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
+        <p className="text-sm text-gray-400 mt-2 flex items-center">
+          <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
               cx="12"
@@ -255,6 +227,7 @@ export default function SignUpPage() {
               r="10"
               stroke="currentColor"
               strokeWidth="4"
+              fill="none"
             ></circle>
             <path
               className="opacity-75"
@@ -269,9 +242,9 @@ export default function SignUpPage() {
 
     if (usernameAvailable === true) {
       return (
-        <p className="text-sm text-green-600 mt-1 flex items-center">
+        <p className="text-sm text-green-400 mt-2 flex items-center">
           <svg
-            className="h-4 w-4 mr-1"
+            className="h-4 w-4 mr-2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -290,9 +263,9 @@ export default function SignUpPage() {
 
     if (usernameAvailable === false) {
       return (
-        <p className="text-sm text-red-600 mt-1 flex items-center">
+        <p className="text-sm text-red-400 mt-2 flex items-center">
           <svg
-            className="h-4 w-4 mr-1"
+            className="h-4 w-4 mr-2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -313,162 +286,178 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              href="/signin"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 mb-1"
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg w-full">
+        <div className="bg-[#1A2332] rounded-2xl border border-gray-800 p-8 sm:p-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 mb-4">
+              <svg
+                className="w-7 h-7 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  usernameAvailable === false
-                    ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                    : usernameAvailable === true
-                      ? "border-green-300 focus:ring-green-500 focus:border-green-500"
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm`}
-                placeholder="Choose a username"
-              />
-              {getUsernameIndicator()}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                />
+              </svg>
             </div>
-
-            <div>
-              <label
-                htmlFor="email-address"
-                className="block text-sm font-medium text-gray-700 mb-1"
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Create your account
+            </h2>
+            <p className="text-gray-400">
+              Already have an account?{" "}
+              <Link
+                href="/signin"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            {/* Unit Selection Dropdown */}
-            <div>
-              <label
-                htmlFor="unit"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Choose your unit
-              </label>
-              <select
-                id="unit"
-                name="unit"
-                required
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              >
-                <option value="">Select a unit...</option>
-                {units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.name} - {unit.description}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Min 6 characters"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirm-password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm your password"
-              />
-            </div>
+                Sign in
+              </Link>
+            </p>
           </div>
 
-          {message.text && (
-            <div
-              className={`rounded-md p-4 ${
-                message.type === "error"
-                  ? "bg-red-50 text-red-800 border border-red-200"
-                  : "bg-green-50 text-green-800 border border-green-200"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-            </div>
-          )}
+          <form className="space-y-5" onSubmit={handleSignUp}>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Username
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className={`w-full px-4 py-3 bg-[#0B1120] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all ${
+                    usernameAvailable === false
+                      ? "border-red-500/50 focus:ring-red-500"
+                      : usernameAvailable === true
+                        ? "border-green-500/50 focus:ring-green-500"
+                        : "border-gray-700 focus:ring-blue-500"
+                  }`}
+                  placeholder="Choose a username"
+                />
+                {getUsernameIndicator()}
+              </div>
 
-          <div>
+              <div>
+                <label
+                  htmlFor="email-address"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Email address
+                </label>
+                <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              {/* Unit Selection */}
+              <div>
+                <label
+                  htmlFor="unit"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Choose your unit
+                </label>
+                <select
+                  id="unit"
+                  name="unit"
+                  required
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer"
+                >
+                  <option value="">Select a unit...</option>
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name} - {unit.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Min 6 characters"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="confirm-password"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+
+            {message.text && (
+              <div
+                className={`rounded-lg p-4 ${
+                  message.type === "error"
+                    ? "bg-red-500/10 border border-red-500/30 text-red-400"
+                    : "bg-green-500/10 border border-green-500/30 text-green-400"
+                }`}
+              >
+                <p className="text-sm">{message.text}</p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={
                 loading || usernameAvailable === false || checkingUsername
               }
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -73,20 +73,20 @@ const units = [
 export default function AboutPage() {
   return (
     <div
-      className={`${rethinkSans.className} min-h-screen bg-black text-white`}
+      className={`${rethinkSans.className} min-h-screen bg-[#0B1120] text-white`}
     >
       {/* Hero Section */}
       <section className="px-8 md:px-20 lg:px-60 mx-auto pt-32 pb-20">
         <h1 className="text-6xl md:text-7xl font-medium mb-6 leading-tight">
-          About
+          <span className="text-gray-400">About</span>
           <br />
           <span
-            className={`${modernSociety.className} text-red-600 text-7xl md:text-8xl`}
+            className={`${modernSociety.className} text-red-500 text-7xl md:text-8xl`}
           >
             the name.
           </span>
         </h1>
-        <p className="text-lg text-gray-400 max-w-2xl">
+        <p className="text-xl text-gray-400 max-w-2xl font-light">
           We are a community of like-minded individuals united by shared values,
           organized into legendary units, each with its own unique identity and
           purpose.
@@ -109,13 +109,13 @@ export default function AboutPage() {
               contribute to something greater than themselves.
             </p>
           </div>
-          <div className="bg-gray-900 rounded-lg p-8 border border-gray-800">
-            <h3 className="text-2xl font-semibold mb-6 text-red-600">
+          <div className="bg-[#1A2332] rounded-xl p-8 border border-gray-800">
+            <h3 className="text-2xl font-semibold mb-6 text-red-500">
               Core Values
             </h3>
             <ul className="space-y-4">
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 mt-1">▸</span>
+                <span className="text-red-500 mr-3 mt-1 text-lg">•</span>
                 <div>
                   <strong className="text-white">Excellence</strong>
                   <p className="text-gray-400 text-sm mt-1">
@@ -124,7 +124,7 @@ export default function AboutPage() {
                 </div>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 mt-1">▸</span>
+                <span className="text-red-500 mr-3 mt-1 text-lg">•</span>
                 <div>
                   <strong className="text-white">Community</strong>
                   <p className="text-gray-400 text-sm mt-1">
@@ -133,7 +133,7 @@ export default function AboutPage() {
                 </div>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 mt-1">▸</span>
+                <span className="text-red-500 mr-3 mt-1 text-lg">•</span>
                 <div>
                   <strong className="text-white">Integrity</strong>
                   <p className="text-gray-400 text-sm mt-1">
@@ -142,7 +142,7 @@ export default function AboutPage() {
                 </div>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 mt-1">▸</span>
+                <span className="text-red-500 mr-3 mt-1 text-lg">•</span>
                 <div>
                   <strong className="text-white">Growth</strong>
                   <p className="text-gray-400 text-sm mt-1">
@@ -172,16 +172,11 @@ export default function AboutPage() {
             return (
               <div
                 key={unit.name}
-                className="bg-gray-900 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                style={{
-                  borderColor: colors.primary,
-                }}
+                className="bg-[#1A2332] rounded-xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all"
               >
                 <div
-                  className="h-2"
-                  style={{
-                    background: `linear-gradient(90deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
-                  }}
+                  className="h-1 w-full"
+                  style={{ backgroundColor: colors.primary }}
                 ></div>
                 <div className="p-6">
                   <h3
@@ -204,12 +199,12 @@ export default function AboutPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="bg-gray-900 border-y border-gray-800 py-20">
+      <section className="bg-[#1A2332] border-y border-gray-800 py-20">
         <div className="max-w-6xl mx-auto px-8">
           <h2 className="text-4xl font-bold mb-12 text-center">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-red-500">
                 1
               </div>
               <h3 className="text-xl font-semibold mb-3">Sign Up</h3>
@@ -219,7 +214,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-red-500">
                 2
               </div>
               <h3 className="text-xl font-semibold mb-3">Connect</h3>
@@ -229,7 +224,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-red-500">
                 3
               </div>
               <h3 className="text-xl font-semibold mb-3">Grow</h3>
@@ -251,14 +246,14 @@ export default function AboutPage() {
             Choose your unit, connect with like-minded individuals, and start
             your journey.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <button className="bg-red-600 hover:bg-red-700 px-8 py-3 text-sm font-medium transition-colors rounded-md">
+              <button className="bg-red-600 hover:bg-red-700 px-8 py-3 font-semibold transition-colors rounded-lg">
                 Join Now
               </button>
             </Link>
             <Link href="/">
-              <button className="border-2 border-gray-800 hover:border-red-600 px-8 py-3 text-sm font-medium transition-colors rounded-md">
+              <button className="border border-gray-700 hover:border-red-500 px-8 py-3 font-semibold transition-colors rounded-lg">
                 Back to Home
               </button>
             </Link>

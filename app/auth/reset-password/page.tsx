@@ -15,7 +15,6 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
     const checkSession = async () => {
       const {
         data: { session },
@@ -36,14 +35,12 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setMessage({ type: "error", text: "Passwords do not match" });
       setLoading(false);
       return;
     }
 
-    // Validate password length
     if (password.length < 6) {
       setMessage({
         type: "error",
@@ -53,7 +50,6 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // Update the password
     const { error } = await supabase.auth.updateUser({
       password: password,
     });
@@ -67,7 +63,6 @@ export default function ResetPasswordPage() {
         text: "Password updated successfully! Redirecting to sign in...",
       });
 
-      // Sign out and redirect to sign in page
       setTimeout(async () => {
         await supabase.auth.signOut();
         router.push("/signin");
@@ -76,86 +71,106 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Reset your password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your new password below
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="password" className="sr-only">
-                New Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="New password"
-                minLength={6}
-              />
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="bg-[#1A2332] rounded-2xl border border-gray-800 p-8 sm:p-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 mb-4">
+              <svg
+                className="w-7 h-7 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
+              </svg>
             </div>
-            <div>
-              <label htmlFor="confirm-password" className="sr-only">
-                Confirm New Password
-              </label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm new password"
-                minLength={6}
-              />
-            </div>
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Reset your password
+            </h2>
+            <p className="text-gray-400">Enter your new password below</p>
           </div>
 
-          {message.text && (
-            <div
-              className={`rounded-md p-4 ${
-                message.type === "error"
-                  ? "bg-red-50 text-red-800"
-                  : "bg-green-50 text-green-800"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
+          <form className="space-y-6" onSubmit={handleResetPassword}>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  New Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter new password"
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="confirm-password"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Confirm New Password
+                </label>
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Confirm new password"
+                  minLength={6}
+                />
+              </div>
             </div>
-          )}
 
-          <div>
+            {message.text && (
+              <div
+                className={`rounded-lg p-4 ${
+                  message.type === "error"
+                    ? "bg-red-500/10 border border-red-500/30 text-red-400"
+                    : "bg-green-500/10 border border-green-500/30 text-green-400"
+                }`}
+              >
+                <p className="text-sm">{message.text}</p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Updating password..." : "Update password"}
             </button>
-          </div>
 
-          <div className="text-center">
-            <Link
-              href="/signin"
-              className="font-medium text-blue-600 hover:text-blue-500 text-sm"
-            >
-              Back to sign in
-            </Link>
-          </div>
-        </form>
+            <div className="text-center">
+              <Link
+                href="/signin"
+                className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              >
+                ← Back to sign in
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -8,31 +8,31 @@ const UNIT_COLORS = {
     primary: "#6FF3FF",
     light: "#E0FCFF",
     dark: "#00B8CC",
-    text: "#004D57",
+    text: "#6FF3FF",
   },
   "Legio X Equestris": {
     primary: "#8A3FFC",
     light: "#F0E6FF",
     dark: "#6929C4",
-    text: "#2D1A52",
+    text: "#8A3FFC",
   },
   Myrmidons: {
     primary: "#A6FF00",
     light: "#F0FFD6",
     dark: "#7ABE00",
-    text: "#2D4000",
+    text: "#A6FF00",
   },
   "Narayani Sena": {
     primary: "#FFC83D",
     light: "#FFF5E0",
     dark: "#E09600",
-    text: "#5C3D00",
+    text: "#FFC83D",
   },
   Spartans: {
     primary: "#FF6A00",
     light: "#FFE8D6",
     dark: "#CC5500",
-    text: "#5C2800",
+    text: "#FF6A00",
   },
 };
 
@@ -41,7 +41,7 @@ const DEFAULT_COLORS = {
   primary: "#3B82F6",
   light: "#EFF6FF",
   dark: "#1E40AF",
-  text: "#1E3A8A",
+  text: "#3B82F6",
 };
 
 export default async function DashboardPage() {
@@ -80,24 +80,20 @@ export default async function DashboardPage() {
       : DEFAULT_COLORS;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar with Unit Color */}
-      <nav
-        className="shadow"
-        style={{
-          background: `linear-gradient(135deg, ${unitColors.primary} 0%, ${unitColors.dark} 100%)`,
-        }}
-      >
+    <div className="min-h-screen bg-[#0B1120] text-white">
+      {/* Navigation Bar */}
+      <nav className="border-b border-gray-800 bg-[#1A2332]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
               <h1 className="text-xl font-bold text-white">Dashboard</h1>
               {profile?.unit_name && (
                 <span
-                  className="ml-4 px-3 py-1 rounded-full text-sm font-semibold"
+                  className="px-3 py-1 rounded-lg text-sm font-semibold border"
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    color: "white",
+                    borderColor: unitColors.primary,
+                    color: unitColors.text,
+                    backgroundColor: `${unitColors.primary}15`,
                   }}
                 >
                   {profile.unit_name}
@@ -111,159 +107,257 @@ export default async function DashboardPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Main Profile Card with Unit Theme */}
-          <div
-            className="rounded-lg shadow-lg overflow-hidden"
-            style={{
-              background: "white",
-              borderTop: `4px solid ${unitColors.primary}`,
-            }}
-          >
+      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0 space-y-6">
+          {/* Welcome Card */}
+          <div className="bg-[#1A2332] rounded-xl border border-gray-800 overflow-hidden">
             <div
-              className="p-6"
-              style={{
-                background: `linear-gradient(to bottom, ${unitColors.light} 0%, white 100%)`,
-              }}
-            >
-              <h2
-                className="text-2xl font-bold mb-4"
-                style={{ color: unitColors.text }}
-              >
-                Welcome{profile?.username ? `, @${profile.username}` : ""}!
+              className="h-1 w-full"
+              style={{ backgroundColor: unitColors.primary }}
+            ></div>
+            <div className="p-8">
+              <h2 className="text-3xl font-bold mb-6 text-white">
+                Welcome back{profile?.username ? `, @${profile.username}` : ""}!
               </h2>
 
-              <div className="space-y-3 text-gray-700">
-                <div className="flex items-center">
-                  <span className="font-semibold w-32">Username:</span>
-                  <span>{profile?.username || "Not set"}</span>
-                </div>
-
-                <div className="flex items-center">
-                  <span className="font-semibold w-32">Email:</span>
-                  <span>{user.email}</span>
-                </div>
-
-                {profile?.full_name && (
-                  <div className="flex items-center">
-                    <span className="font-semibold w-32">Full Name:</span>
-                    <span>{profile.full_name}</span>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${unitColors.primary}20` }}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        style={{ color: unitColors.primary }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Username</p>
+                      <p className="text-base font-semibold text-white">
+                        {profile?.username || "Not set"}
+                      </p>
+                    </div>
                   </div>
-                )}
+
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${unitColors.primary}20` }}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        style={{ color: unitColors.primary }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Email</p>
+                      <p className="text-base font-semibold text-white">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {profile?.full_name && (
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: `${unitColors.primary}20` }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          style={{ color: unitColors.primary }}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Full Name</p>
+                        <p className="text-base font-semibold text-white">
+                          {profile.full_name}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {profile?.unit_name && (
-                  <div className="flex items-center">
-                    <span className="font-semibold w-32">Unit:</span>
-                    <span
-                      className="font-bold text-lg"
-                      style={{ color: unitColors.primary }}
+                  <div
+                    className="rounded-lg p-6 border"
+                    style={{
+                      backgroundColor: `${unitColors.primary}10`,
+                      borderColor: `${unitColors.primary}40`,
+                    }}
+                  >
+                    <p className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                      Your Unit
+                    </p>
+                    <p
+                      className="text-2xl font-bold mb-2"
+                      style={{ color: unitColors.text }}
                     >
                       {profile.unit_name}
-                    </span>
+                    </p>
+                    {profile.unit_description && (
+                      <p className="text-sm text-gray-300">
+                        {profile.unit_description}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
+            </div>
+          </div>
 
-              {/* Unit Description Card */}
-              {profile?.unit_name && profile?.unit_description && (
-                <div
-                  className="rounded-lg p-5 mt-6 shadow-sm"
-                  style={{
-                    background: `linear-gradient(135deg, ${unitColors.light} 0%, white 100%)`,
-                    border: `2px solid ${unitColors.primary}`,
-                  }}
-                >
-                  <div className="flex items-center mb-2">
-                    <div
-                      className="w-1 h-6 rounded-full mr-3"
-                      style={{ backgroundColor: unitColors.primary }}
-                    ></div>
+          {/* Stats Grid */}
+          {profile?.unit_name && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-400 mb-1">
+                      Unit Members
+                    </p>
                     <p
-                      className="text-sm font-bold uppercase tracking-wide"
+                      className="text-4xl font-bold"
                       style={{ color: unitColors.text }}
                     >
-                      About Your Unit
+                      {unitMemberCount}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {unitMemberCount === 1 ? "warrior" : "warriors"} in{" "}
+                      {profile.unit_name}
                     </p>
                   </div>
-                  <p className="text-gray-800 leading-relaxed">
-                    {profile.unit_description}
-                  </p>
+                  <div
+                    className="w-16 h-16 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${unitColors.primary}20` }}
+                  >
+                    <svg
+                      className="w-8 h-8"
+                      style={{ color: unitColors.primary }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
                 </div>
-              )}
+              </div>
 
-              {/* Info Box */}
+              <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-400 mb-1">
+                      Your Rank
+                    </p>
+                    <p
+                      className="text-4xl font-bold"
+                      style={{ color: unitColors.text }}
+                    >
+                      Recruit
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Keep training to advance
+                    </p>
+                  </div>
+                  <div
+                    className="w-16 h-16 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${unitColors.primary}20` }}
+                  >
+                    <svg
+                      className="w-8 h-8"
+                      style={{ color: unitColors.primary }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Protected Info */}
+          <div
+            className="rounded-lg p-5 border"
+            style={{
+              backgroundColor: `${unitColors.primary}10`,
+              borderColor: `${unitColors.primary}30`,
+            }}
+          >
+            <div className="flex items-start gap-3">
               <div
-                className="rounded-md p-4 mt-6"
-                style={{
-                  backgroundColor: unitColors.light,
-                  border: `1px solid ${unitColors.primary}`,
-                }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `${unitColors.primary}20` }}
               >
-                <p
-                  className="text-sm font-medium"
-                  style={{ color: unitColors.text }}
+                <svg
+                  className="w-5 h-5"
+                  style={{ color: unitColors.primary }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">
+                  Protected Dashboard
+                </p>
+                <p className="text-sm text-gray-300 mt-1">
                   🛡️ This is a protected page. Only authenticated users can see
                   this content.
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Unit Stats or Additional Info Cards */}
-          {profile?.unit_name && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <div
-                className="rounded-lg p-6 shadow"
-                style={{
-                  background: "white",
-                  borderLeft: `4px solid ${unitColors.primary}`,
-                }}
-              >
-                <h3
-                  className="font-semibold text-lg mb-2"
-                  style={{ color: unitColors.text }}
-                >
-                  Unit Members
-                </h3>
-                <p
-                  className="text-3xl font-bold"
-                  style={{ color: unitColors.primary }}
-                >
-                  {unitMemberCount}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {unitMemberCount === 1 ? "warrior" : "warriors"} in{" "}
-                  {profile.unit_name}
-                </p>
-              </div>
-
-              <div
-                className="rounded-lg p-6 shadow"
-                style={{
-                  background: "white",
-                  borderLeft: `4px solid ${unitColors.primary}`,
-                }}
-              >
-                <h3
-                  className="font-semibold text-lg mb-2"
-                  style={{ color: unitColors.text }}
-                >
-                  Your Rank
-                </h3>
-                <p
-                  className="text-3xl font-bold"
-                  style={{ color: unitColors.primary }}
-                >
-                  Recruit
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Keep training to advance
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>
