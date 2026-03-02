@@ -1,14 +1,9 @@
 "use client";
-import localFont from "next/font/local";
 import { Rethink_Sans } from "next/font/google";
 
 const rethinkSans = Rethink_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-});
-
-const modernSociety = localFont({
-  src: "../public/fonts/ModernSociety-Regular.otf",
 });
 
 export default function HomePage() {
@@ -25,7 +20,7 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium leading-tight">
             <span className="block text-gray-400 mb-2">Welcome to</span>
             <span
-              className={`${modernSociety.className} text-red-500 text-5xl md:text-8xl lg:text-7xl`}
+              className={`font-modernsociety text-red-500 text-5xl md:text-8xl lg:text-7xl`}
             >
               the name.
             </span>
