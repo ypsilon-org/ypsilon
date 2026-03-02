@@ -244,7 +244,7 @@ export default function HomePage() {
         /* ─── INTERSTITIAL ─── */
         .interstitial {
           text-align: center;
-          padding: 5rem 0 4rem;
+          padding: 2rem 0 1.5rem;
           color: rgba(200,168,75,0.3);
           font-size: 1.1rem;
           letter-spacing: 1.2em;

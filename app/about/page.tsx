@@ -1,11 +1,6 @@
 "use client";
 
-import localFont from "next/font/local";
 import Link from "next/link";
-
-const modernSociety = localFont({
-  src: "../../public/fonts/ModernSociety-Regular.otf",
-});
 
 const UNIT_COLORS = {
   Einherjar: { primary: "#6FF3FF", accent: "#29848e" },
@@ -282,7 +277,7 @@ export default function AboutPage() {
         /* ─── INTERSTITIAL ─── */
         .interstitial {
           text-align: center;
-          padding: 4rem 0 3rem;
+          padding: 2rem 0 1.5rem;
           color: rgba(200,168,75,0.28);
           font-size: 1.1rem;
           letter-spacing: 1.2em;

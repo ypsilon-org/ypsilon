@@ -17,30 +17,24 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
-
     let email = identifier;
-
     if (!identifier.includes("@")) {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("email")
         .eq("username", identifier.toLowerCase())
         .single();
-
       if (profileError || !profile) {
         setMessage({ type: "error", text: "Invalid username or password" });
         setLoading(false);
         return;
       }
-
       email = profile.email;
     }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
     if (error) {
       setMessage({ type: "error", text: "Invalid username/email or password" });
       setLoading(false);
@@ -55,146 +49,261 @@ export default function SignInPage() {
       setMessage({ type: "error", text: "Please enter your email first" });
       return;
     }
-
     let email = identifier;
-
     if (!identifier.includes("@")) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email")
         .eq("username", identifier.toLowerCase())
         .single();
-
       if (!profile) {
         setMessage({ type: "error", text: "User not found" });
         return;
       }
-
       email = profile.email;
     }
-
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
-
     if (error) {
       setMessage({ type: "error", text: error.message });
     } else {
       setMessage({
         type: "success",
-        text: "Password reset email sent! Check your inbox.",
+        text: "Password reset email sent. Check your inbox.",
       });
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="bg-[#1A2332] rounded-2xl border border-gray-800 p-8 sm:p-10">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 mb-4">
-              <svg
-                className="w-7 h-7 text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
-            <p className="text-gray-400">
-              Don't have an account?{" "}
-              <Link
-                href="/signup"
-                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
+    <div className="auth-root">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+          --bone: #EDE3D0; --parchment: #C9B49A; --crimson: #8B0A0A;
+          --gold: #C8A84B; --gold-dim: #7D6328; --ink: #080604; --dark: #0D0A06;
+        }
+        .auth-root {
+          min-height: 100vh; background: var(--ink); color: var(--bone);
+          font-family: 'EB Garamond', Georgia, serif;
+          display: flex; align-items: center; justify-content: center;
+          padding: 3rem 1.5rem; position: relative; overflow: hidden;
+        }
+        .auth-root::before {
+          content: ''; position: fixed; inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+          opacity: 0.038; pointer-events: none; z-index: 9999; mix-blend-mode: overlay;
+        }
+        .auth-bg {
+          position: fixed; inset: 0;
+          background:
+            radial-gradient(ellipse 70% 55% at 50% 30%, rgba(139,10,10,0.07) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 15% 80%, rgba(30,18,8,0.6) 0%, transparent 55%),
+            linear-gradient(160deg, #130A04 0%, var(--ink) 45%, #0A0806 100%);
+          pointer-events: none;
+        }
+        .auth-vignette {
+          position: fixed; inset: 0;
+          background: radial-gradient(ellipse 95% 95% at 50% 50%, transparent 35%, rgba(3,2,1,0.88) 100%);
+          pointer-events: none;
+        }
+        .auth-card {
+          position: relative; z-index: 2; width: 100%; max-width: 440px;
+          background: linear-gradient(135deg, rgba(20,13,6,0.97), rgba(10,8,4,0.99));
+          border: 1px solid rgba(200,168,75,0.13);
+          padding: clamp(2.5rem, 5vw, 3.5rem) clamp(2rem, 4vw, 3rem);
+          animation: fadeUp 0.85s ease forwards;
+        }
+        .auth-card::before, .auth-card::after {
+          content: ''; position: absolute; width: 32px; height: 32px;
+          border-color: rgba(200,168,75,0.25); border-style: solid;
+        }
+        .auth-card::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+        .auth-card::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+        .corner-tr, .corner-bl {
+          position: absolute; width: 32px; height: 32px;
+          border-color: rgba(200,168,75,0.25); border-style: solid;
+        }
+        .corner-tr { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+        .corner-bl { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+        .card-glow {
+          position: absolute; inset: 0;
+          background: radial-gradient(ellipse 80% 45% at 50% 0%, rgba(139,10,10,0.05) 0%, transparent 65%);
+          pointer-events: none;
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(22px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .auth-header { text-align: center; margin-bottom: 2.8rem; position: relative; }
+        .auth-eyebrow {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.68rem;
+          letter-spacing: 0.48em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; margin-bottom: 1.1rem;
+          display: flex; align-items: center; justify-content: center; gap: 0.9rem;
+        }
+        .auth-eyebrow::before, .auth-eyebrow::after {
+          content: ''; display: inline-block; width: 28px; height: 1px;
+          background: var(--gold-dim); opacity: 0.45;
+        }
+        .auth-title {
+          font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3rem);
+          font-weight: 900; color: var(--bone); line-height: 0.92;
+          letter-spacing: -0.01em; text-shadow: 0 2px 30px rgba(0,0,0,0.8); margin-bottom: 0.15em;
+        }
+        .auth-title em { display: block; font-style: italic; color: var(--crimson); }
+        .auth-divider {
+          display: flex; align-items: center; justify-content: center;
+          gap: 0.9rem; margin: 1.3rem 0 1rem;
+        }
+        .auth-divider-line {
+          height: 1px; width: 40px;
+          background: linear-gradient(to right, transparent, rgba(200,168,75,0.28));
+        }
+        .auth-divider-line:last-child {
+          background: linear-gradient(to left, transparent, rgba(200,168,75,0.28));
+        }
+        .auth-divider-ornament { color: var(--gold-dim); font-size: 0.55rem; opacity: 0.5; }
+        .auth-subtitle {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;
+          font-style: italic; font-weight: 300; color: rgba(201,180,154,0.45);
+        }
+        .auth-subtitle a {
+          color: rgba(200,168,75,0.65); text-decoration: none; font-style: normal;
+          font-weight: 400; letter-spacing: 0.02em; transition: color 0.3s;
+        }
+        .auth-subtitle a:hover { color: var(--gold); }
+        .auth-form { display: flex; flex-direction: column; gap: 1.5rem; position: relative; }
+        .field-group { display: flex; flex-direction: column; gap: 1.25rem; }
+        .field { display: flex; flex-direction: column; gap: 0.5rem; }
+        .field-label {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.7rem;
+          letter-spacing: 0.42em; text-transform: uppercase; color: var(--gold-dim); font-weight: 300;
+        }
+        .field-input {
+          width: 100%; padding: 0.85rem 1rem; background: rgba(5,3,2,0.75);
+          border: 1px solid rgba(200,168,75,0.11); color: var(--bone);
+          font-family: 'EB Garamond', serif; font-size: 1rem; outline: none;
+          transition: border-color 0.3s, box-shadow 0.3s; border-radius: 0; -webkit-appearance: none;
+        }
+        .field-input::placeholder { color: rgba(201,180,154,0.2); font-style: italic; }
+        .field-input:focus {
+          border-color: rgba(139,10,10,0.45);
+          box-shadow: 0 0 0 1px rgba(139,10,10,0.12), inset 0 0 18px rgba(139,10,10,0.03);
+        }
+        .forgot-row { display: flex; justify-content: flex-end; margin-top: -0.4rem; }
+        .forgot-btn {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.8rem; font-style: italic;
+          letter-spacing: 0.1em; color: rgba(200,168,75,0.38);
+          background: none; border: none; cursor: pointer; padding: 0; transition: color 0.3s;
+        }
+        .forgot-btn:hover { color: rgba(200,168,75,0.72); }
+        .auth-message {
+          padding: 0.85rem 1rem; font-family: 'Cormorant Garamond', serif;
+          font-size: 0.92rem; font-style: italic; letter-spacing: 0.02em; border: 1px solid;
+        }
+        .auth-message.error {
+          background: rgba(139,10,10,0.07); border-color: rgba(139,10,10,0.22);
+          color: rgba(220,150,150,0.85);
+        }
+        .auth-message.success {
+          background: rgba(200,168,75,0.05); border-color: rgba(200,168,75,0.18);
+          color: rgba(200,168,75,0.78);
+        }
+        .btn-submit {
+          width: 100%; font-family: 'Cormorant Garamond', serif; font-size: 0.77rem;
+          font-weight: 600; letter-spacing: 0.42em; text-transform: uppercase;
+          color: var(--bone); background: transparent; border: 1px solid rgba(139,10,10,0.5);
+          padding: 1.1rem 2rem; cursor: pointer; position: relative; overflow: hidden;
+          transition: border-color 0.4s ease; margin-top: 0.2rem;
+        }
+        .btn-submit::before {
+          content: ''; position: absolute; inset: 0; background: var(--crimson);
+          transform: translateX(-101%); transition: transform 0.45s cubic-bezier(0.77,0,0.175,1);
+        }
+        .btn-submit:hover:not(:disabled)::before { transform: translateX(0); }
+        .btn-submit:hover:not(:disabled) { border-color: var(--crimson); }
+        .btn-submit span { position: relative; z-index: 1; }
+        .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+      `}</style>
+
+      <div className="auth-bg" />
+      <div className="auth-vignette" />
+
+      <div className="auth-card">
+        <span className="corner-tr" />
+        <span className="corner-bl" />
+        <div className="card-glow" />
+
+        <div className="auth-header">
+          <p className="auth-eyebrow">Est. MMXXVI</p>
+          <h1 className="auth-title">
+            Welcome<em>back.</em>
+          </h1>
+          <div className="auth-divider">
+            <span className="auth-divider-line" />
+            <span className="auth-divider-ornament">✦</span>
+            <span className="auth-divider-line" />
           </div>
-
-          <form className="space-y-6" onSubmit={handleSignIn}>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="identifier"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Username or Email
-                </label>
-                <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter username or email"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#0B1120] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter password"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {message.text && (
-              <div
-                className={`rounded-lg p-4 ${
-                  message.type === "error"
-                    ? "bg-red-500/10 border border-red-500/30 text-red-400"
-                    : "bg-green-500/10 border border-green-500/30 text-green-400"
-                }`}
-              >
-                <p className="text-sm">{message.text}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
+          <p className="auth-subtitle">
+            No account yet? <Link href="/signup">Request admission</Link>
+          </p>
         </div>
+
+        <form className="auth-form" onSubmit={handleSignIn}>
+          <div className="field-group">
+            <div className="field">
+              <label htmlFor="identifier" className="field-label">
+                Username or Email
+              </label>
+              <input
+                id="identifier"
+                name="identifier"
+                type="text"
+                autoComplete="username"
+                required
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="field-input"
+                placeholder="Your name or address"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="password" className="field-label">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="field-input"
+                placeholder="Your secret"
+              />
+            </div>
+          </div>
+          <div className="forgot-row">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="forgot-btn"
+            >
+              Forgot your password?
+            </button>
+          </div>
+          {message.text && (
+            <div className={`auth-message ${message.type}`}>{message.text}</div>
+          )}
+          <button type="submit" disabled={loading} className="btn-submit">
+            <span>{loading ? "Entering..." : "Enter the Family"}</span>
+          </button>
+        </form>
       </div>
     </div>
   );
