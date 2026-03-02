@@ -126,11 +126,11 @@ export default function AboutPage() {
         /* ─── HERO ─── */
         .hero {
           position: relative;
-          min-height: 65vh;
+          min-height: 72vh;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          padding: clamp(8rem, 16vh, 14rem) 6vw 7rem;
+          padding: clamp(9rem, 18vh, 15rem) 6vw 7rem;
           overflow: hidden;
         }
 
@@ -828,8 +828,8 @@ export default function AboutPage() {
         <div className="how-inner">
           <div className="how-header">
             <p className="section-eyebrow">The Path</p>
+            <h2 className="section-title">How It Works</h2>
             <h2 className="section-title">
-              How It Works
               <em>Three steps to the family.</em>
             </h2>
           </div>

@@ -106,7 +106,7 @@ export default function HomePage() {
           max-width: 680px;
           animation: fadeIn 2s ease forwards;
           will-change: transform, opacity;
-          padding-top: clamp(6rem, 12vh, 10rem);
+          padding-top: clamp(7rem, 14vh, 11rem);
         }
 
         @keyframes fadeIn {
