@@ -3,65 +3,37 @@ import { redirect } from "next/navigation";
 import SignOut from "@/components/SignOut";
 import Link from "next/link";
 
-// Unit color configuration
 const UNIT_COLORS = {
-  Einherjar: {
-    primary: "#6FF3FF",
-    text: "#6FF3FF",
-  },
-  "Legio X Equestris": {
-    primary: "#8A3FFC",
-    text: "#8A3FFC",
-  },
-  Myrmidons: {
-    primary: "#A6FF00",
-    text: "#A6FF00",
-  },
-  "Narayani Sena": {
-    primary: "#FFC83D",
-    text: "#FFC83D",
-  },
-  Spartans: {
-    primary: "#FF6A00",
-    text: "#FF6A00",
-  },
+  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
+  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
+  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
+  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
+  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
 };
 
-const DEFAULT_COLORS = {
-  primary: "#3B82F6",
-  text: "#3B82F6",
-};
+const DEFAULT_COLORS = { primary: "#C8A84B", text: "#C8A84B" };
 
 export default async function LeaderDashboard() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
 
-  if (!user) {
-    redirect("/signin");
-  }
-
-  // Get user profile with unit information
   const { data: profile } = await supabase
     .from("profiles_with_units")
     .select("*")
     .eq("id", user.id)
     .single();
 
-  // Check if user is a leader
-  if (!profile?.is_leader) {
-    redirect("/dashboard");
-  }
+  if (!profile?.is_leader) redirect("/dashboard");
 
-  // Get all members of this leader's unit
   const { data: unitMembers, count: totalMembers } = await supabase
     .from("profiles")
     .select("*", { count: "exact" })
     .eq("unit_id", profile.unit_id)
     .order("created_at", { ascending: false });
 
-  // Get recent members (joined in last 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -71,7 +43,6 @@ export default async function LeaderDashboard() {
     .eq("unit_id", profile.unit_id)
     .gte("created_at", sevenDaysAgo.toISOString());
 
-  // Get colors for the unit
   const unitColors =
     profile?.unit_name &&
     UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
@@ -79,231 +50,299 @@ export default async function LeaderDashboard() {
       : DEFAULT_COLORS;
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white">
-      {/* Navigation Bar */}
-      <nav className="border-b border-gray-800 bg-[#1A2332]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-white">
-                {profile.unit_name} - Leader Dashboard
-              </h1>
-              <span
-                className="px-3 py-1 rounded-lg text-xs font-bold border"
+    <div className="leader-root">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --bone: #EDE3D0; --parchment: #C9B49A; --crimson: #8B0A0A;
+          --gold: #C8A84B; --gold-dim: #7D6328; --ink: #080604; --dark: #0D0A06;
+        }
+
+        .leader-root {
+          min-height: 100vh; background: var(--ink); color: var(--bone);
+          font-family: 'EB Garamond', Georgia, serif;
+          position: relative; overflow-x: hidden;
+        }
+
+        .leader-root::before {
+          content: ''; position: fixed; inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+          opacity: 0.038; pointer-events: none; z-index: 9999; mix-blend-mode: overlay;
+        }
+
+        .leader-root::after {
+          content: ''; position: fixed; inset: 0;
+          background:
+            radial-gradient(ellipse 80% 40% at 50% 0%, rgba(139,10,10,0.05) 0%, transparent 60%),
+            linear-gradient(to bottom, #130A04 0%, var(--ink) 20%);
+          pointer-events: none; z-index: 0;
+        }
+
+        .leader-main {
+          position: relative; z-index: 1;
+          max-width: 1300px; margin: 0 auto;
+          padding: clamp(5rem, 10vw, 8rem) clamp(1.5rem, 4vw, 3rem) clamp(2rem, 5vw, 4rem);
+        }
+
+        .leader-stack { display: flex; flex-direction: column; gap: 2rem; }
+
+        .page-eyebrow {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.7rem;
+          letter-spacing: 0.48em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; margin-bottom: 0.6rem;
+          display: flex; align-items: center; gap: 0.8rem;
+        }
+        .page-eyebrow::before {
+          content: ''; display: inline-block; width: 28px; height: 1px;
+          background: var(--gold-dim); opacity: 0.5;
+        }
+
+        .page-title {
+          font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem);
+          font-weight: 900; color: var(--bone); line-height: 0.95; margin-bottom: 0.2em;
+        }
+        .page-title em { font-style: italic; display: block; }
+
+        .page-sub {
+          font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+          font-style: italic; font-weight: 300; color: rgba(201,180,154,0.45);
+          margin-top: 0.8rem; max-width: 520px; line-height: 1.65;
+        }
+
+        .stats-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          gap: 1px; background: rgba(200,168,75,0.08); border: 1px solid rgba(200,168,75,0.08);
+        }
+        @media (max-width: 720px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        .stat-card {
+          background: var(--dark); padding: 2.5rem 2.2rem;
+          position: relative; overflow: hidden; transition: background 0.4s ease;
+        }
+        .stat-card::after {
+          content: ''; position: absolute; top: 0; left: 0;
+          width: 1px; height: 0; background: var(--gold);
+          transition: height 0.6s cubic-bezier(0.77,0,0.175,1);
+        }
+        .stat-card:hover { background: #0E0B07; }
+        .stat-card:hover::after { height: 100%; }
+        .stat-top-bar { position: absolute; top: 0; left: 0; height: 2px; width: 0%; transition: width 0.5s ease; }
+        .stat-card:hover .stat-top-bar { width: 100%; }
+        .stat-label {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.68rem;
+          letter-spacing: 0.42em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; margin-bottom: 1rem;
+        }
+        .stat-value { font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 900; font-style: italic; line-height: 1; margin-bottom: 0.3rem; }
+        .stat-sub { font-family: 'Cormorant Garamond', serif; font-size: 0.8rem; font-style: italic; color: rgba(201,180,154,0.35); font-weight: 300; }
+
+        .panel {
+          background: linear-gradient(135deg, rgba(18,12,6,0.97), rgba(10,7,4,0.99));
+          border: 1px solid rgba(200,168,75,0.12); position: relative; overflow: hidden;
+        }
+        .panel::before, .panel::after {
+          content: ''; position: absolute; width: 26px; height: 26px;
+          border-color: rgba(200,168,75,0.22); border-style: solid;
+        }
+        .panel::before { top:-1px; left:-1px; border-width: 1px 0 0 1px; }
+        .panel::after  { bottom:-1px; right:-1px; border-width: 0 1px 1px 0; }
+        .panel-corner-tr, .panel-corner-bl {
+          position: absolute; width: 26px; height: 26px;
+          border-color: rgba(200,168,75,0.22); border-style: solid; z-index: 1;
+        }
+        .panel-corner-tr { top:-1px; right:-1px; border-width: 1px 1px 0 0; }
+        .panel-corner-bl { bottom:-1px; left:-1px; border-width: 0 0 1px 1px; }
+        .panel-top-bar { height: 2px; width: 100%; }
+        .panel-body { padding: clamp(2rem, 4vw, 3rem); }
+
+        .roster-eyebrow {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.68rem;
+          letter-spacing: 0.42em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; margin-bottom: 0.6rem;
+          display: flex; align-items: center; gap: 0.7rem;
+        }
+        .roster-eyebrow::before {
+          content: ''; display: inline-block; width: 22px; height: 1px;
+          background: var(--gold-dim); opacity: 0.45;
+        }
+        .roster-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; font-style: italic; color: var(--bone); margin-bottom: 2rem; }
+
+        .roster-table-wrap { overflow-x: auto; border: 1px solid rgba(200,168,75,0.1); }
+        .roster-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .roster-table thead tr { border-bottom: 1px solid rgba(200,168,75,0.1); background: rgba(5,3,2,0.5); }
+        .roster-table th {
+          padding: 1rem 1.5rem; text-align: left;
+          font-family: 'Cormorant Garamond', serif; font-size: 0.65rem;
+          letter-spacing: 0.42em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; white-space: nowrap;
+        }
+        .roster-table tbody tr { border-bottom: 1px solid rgba(200,168,75,0.06); transition: background 0.25s ease; }
+        .roster-table tbody tr:last-child { border-bottom: none; }
+        .roster-table tbody tr:hover { background: rgba(200,168,75,0.03); }
+        .roster-table td { padding: 1.1rem 1.5rem; vertical-align: middle; }
+        .td-username { font-family: 'EB Garamond', serif; font-size: 1.02rem; font-style: italic; color: var(--bone); display: flex; align-items: center; gap: 0.7rem; }
+        .leader-badge {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.58rem;
+          letter-spacing: 0.3em; text-transform: uppercase;
+          padding: 0.2rem 0.6rem; border: 1px solid rgba(139,10,10,0.45);
+          color: rgba(220,140,140,0.8); background: rgba(139,10,10,0.07); font-style: normal;
+        }
+        .td-email { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; font-style: italic; color: rgba(201,180,154,0.4); font-weight: 300; }
+        .td-role { font-family: 'Cormorant Garamond', serif; font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); font-weight: 300; }
+        .td-date { font-family: 'Cormorant Garamond', serif; font-size: 0.88rem; font-style: italic; color: rgba(201,180,154,0.35); font-weight: 300; }
+        .roster-empty { text-align: center; padding: 5rem 2rem; }
+        .roster-empty-ornament { color: rgba(200,168,75,0.15); font-size: 3rem; margin-bottom: 1.2rem; font-family: 'Playfair Display', serif; font-style: italic; }
+        .roster-empty-text { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: rgba(201,180,154,0.35); font-weight: 300; }
+
+        /* Bottom notice with sign-out */
+        .notice {
+          padding: 1.5rem 2rem; border: 1px solid;
+          display: flex; gap: 1.2rem; align-items: flex-start;
+        }
+        .notice-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.05rem; }
+        .notice-content { flex: 1; }
+        .notice-title {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.72rem;
+          letter-spacing: 0.38em; text-transform: uppercase; color: var(--gold-dim);
+          font-weight: 300; margin-bottom: 0.4rem;
+        }
+        .notice-body { font-family: 'EB Garamond', serif; font-size: 0.98rem; font-style: italic; color: rgba(201,180,154,0.55); line-height: 1.6; margin-bottom: 1.1rem; }
+        .notice-rule { width: 100%; height: 1px; background: rgba(200,168,75,0.08); margin-bottom: 1rem; }
+
+        .leader-root button[type="button"],
+        .leader-root form button {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.72rem;
+          letter-spacing: 0.38em; text-transform: uppercase;
+          color: rgba(201,180,154,0.35); background: none; border: none;
+          cursor: pointer; padding: 0; transition: color 0.3s; font-weight: 300;
+        }
+        .leader-root button[type="button"]:hover,
+        .leader-root form button:hover { color: rgba(220,140,140,0.75); }
+
+        .back-link {
+          font-family: 'Cormorant Garamond', serif; font-size: 0.72rem;
+          letter-spacing: 0.3em; text-transform: uppercase; color: rgba(201,180,154,0.35);
+          text-decoration: none; font-weight: 300; display: inline-flex;
+          align-items: center; gap: 0.5rem; transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--gold); }
+      `}</style>
+
+      <main className="leader-main">
+        <div className="leader-stack">
+          {/* Header */}
+          <div>
+            <p className="page-eyebrow">Command Quarters</p>
+            <h1 className="page-title">
+              The High Command
+              <em style={{ color: unitColors.text }}>{profile.unit_name}</em>
+            </h1>
+            <p className="page-sub">
+              Welcome, Commander @{profile.username}. The fate of your unit
+              rests in your hands.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div
+                className="stat-top-bar"
                 style={{
-                  borderColor: unitColors.primary,
-                  color: unitColors.text,
-                  backgroundColor: `${unitColors.primary}20`,
+                  background: `linear-gradient(to right, ${unitColors.primary}, transparent)`,
                 }}
-              >
-                COMMANDER
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard"
-                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-              >
-                My Profile
-              </Link>
-              <SignOut />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0 space-y-6">
-          {/* Welcome Card */}
-          <div className="bg-[#1A2332] rounded-xl border border-gray-800 overflow-hidden">
-            <div
-              className="h-1 w-full"
-              style={{ backgroundColor: unitColors.primary }}
-            ></div>
-            <div className="p-8">
-              <h2 className="text-3xl font-bold mb-2 text-white">
-                Welcome, Commander @{profile.username}
-              </h2>
-              <p className="text-gray-400 text-base">
-                You are the leader of {profile.unit_name}. Use this dashboard to
-                oversee your unit and its members.
+              />
+              <p className="stat-label">Total Warriors</p>
+              <p className="stat-value" style={{ color: unitColors.text }}>
+                {totalMembers || 0}
               </p>
+              <p className="stat-sub">sworn to {profile.unit_name}</p>
+            </div>
+            <div className="stat-card">
+              <div
+                className="stat-top-bar"
+                style={{
+                  background: `linear-gradient(to right, ${unitColors.primary}, transparent)`,
+                }}
+              />
+              <p className="stat-label">New Recruits</p>
+              <p className="stat-value" style={{ color: unitColors.text }}>
+                {recentMembers || 0}
+              </p>
+              <p className="stat-sub">joined in the last 7 days</p>
+            </div>
+            <div className="stat-card">
+              <div
+                className="stat-top-bar"
+                style={{
+                  background: `linear-gradient(to right, ${unitColors.primary}, transparent)`,
+                }}
+              />
+              <p className="stat-label">Unit Status</p>
+              <p className="stat-value" style={{ color: unitColors.text }}>
+                Active
+              </p>
+              <p className="stat-sub">standing by for orders</p>
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Members */}
-            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-400 mb-2">
-                    Total Warriors
-                  </p>
-                  <p
-                    className="text-4xl font-bold"
-                    style={{ color: unitColors.text }}
-                  >
-                    {totalMembers || 0}
-                  </p>
-                </div>
-                <div
-                  className="w-14 h-14 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${unitColors.primary}20` }}
-                >
-                  <svg
-                    className="w-7 h-7"
-                    style={{ color: unitColors.primary }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Recruits */}
-            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-400 mb-2">
-                    New Recruits (7 days)
-                  </p>
-                  <p
-                    className="text-4xl font-bold"
-                    style={{ color: unitColors.text }}
-                  >
-                    {recentMembers || 0}
-                  </p>
-                </div>
-                <div
-                  className="w-14 h-14 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${unitColors.primary}20` }}
-                >
-                  <svg
-                    className="w-7 h-7"
-                    style={{ color: unitColors.primary }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Unit Status */}
-            <div className="bg-[#1A2332] rounded-xl p-6 border border-gray-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-400 mb-2">
-                    Unit Status
-                  </p>
-                  <p
-                    className="text-4xl font-bold"
-                    style={{ color: unitColors.text }}
-                  >
-                    Active
-                  </p>
-                </div>
-                <div
-                  className="w-14 h-14 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${unitColors.primary}20` }}
-                >
-                  <svg
-                    className="w-7 h-7"
-                    style={{ color: unitColors.primary }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Unit Members List */}
-          <div className="bg-[#1A2332] rounded-xl border border-gray-800 overflow-hidden">
+          {/* Roster */}
+          <div className="panel">
+            <span className="panel-corner-tr" />
+            <span className="panel-corner-bl" />
             <div
-              className="h-1 w-full"
-              style={{ backgroundColor: unitColors.primary }}
-            ></div>
-            <div className="p-8">
-              <h3 className="text-2xl font-bold mb-6 text-white">
-                Unit Roster
-              </h3>
-
+              className="panel-top-bar"
+              style={{
+                background: `linear-gradient(to right, ${unitColors.primary}, transparent)`,
+              }}
+            />
+            <div className="panel-body">
+              <p className="roster-eyebrow">The Roll</p>
+              <h2 className="roster-title">Unit Roster</h2>
               {unitMembers && unitMembers.length > 0 ? (
-                <div className="overflow-x-auto rounded-lg border border-gray-800">
-                  <table className="min-w-full divide-y divide-gray-800">
+                <div className="roster-table-wrap">
+                  <table className="roster-table">
                     <thead>
-                      <tr className="bg-[#0B1120]">
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          Username
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          Joined
-                        </th>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody>
                       {unitMembers.map((member) => (
-                        <tr
-                          key={member.id}
-                          className="hover:bg-[#0B1120]/50 transition-colors"
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <span className="text-sm font-medium text-white">
-                                @{member.username}
-                              </span>
+                        <tr key={member.id}>
+                          <td>
+                            <div className="td-username">
+                              @{member.username}
                               {member.is_leader && (
-                                <span
-                                  className="px-2 py-1 text-xs font-bold rounded"
-                                  style={{
-                                    backgroundColor: `${unitColors.primary}20`,
-                                    color: unitColors.text,
-                                  }}
-                                >
-                                  LEADER
-                                </span>
+                                <span className="leader-badge">Leader</span>
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                            {member.email}
+                          <td>
+                            <span className="td-email">{member.email}</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            {member.is_leader ? "Commander" : "Warrior"}
+                          <td>
+                            <span className="td-role">
+                              {member.is_leader ? "Commander" : "Warrior"}
+                            </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                            {new Date(member.created_at).toLocaleDateString()}
+                          <td>
+                            <span className="td-date">
+                              {new Date(member.created_at).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                },
+                              )}
+                            </span>
                           </td>
                         </tr>
                       ))}
@@ -311,31 +350,57 @@ export default async function LeaderDashboard() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div
-                    className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4"
-                    style={{ backgroundColor: `${unitColors.primary}15` }}
-                  >
-                    <svg
-                      className="w-8 h-8"
-                      style={{ color: unitColors.primary }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-gray-400">
-                    No members found in your unit yet.
+                <div className="roster-empty">
+                  <div className="roster-empty-ornament">✦</div>
+                  <p className="roster-empty-text">
+                    No warriors have yet sworn allegiance to {profile.unit_name}
+                    .
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Notice + SignOut */}
+          <div
+            className="notice"
+            style={{
+              borderColor: `${unitColors.primary}20`,
+              backgroundColor: `${unitColors.primary}06`,
+            }}
+          >
+            <div className="notice-icon">
+              <svg
+                width="16"
+                height="16"
+                style={{ color: unitColors.primary }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <div className="notice-content">
+              <p className="notice-title">Command Clearance</p>
+              <p className="notice-body">
+                This chamber is sealed to all but the highest rank. You bear the
+                weight of command.
+              </p>
+              <div className="notice-rule" />
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "2rem" }}
+              >
+                <SignOut />
+                <Link href="/dashboard" className="back-link">
+                  ← My Profile
+                </Link>
+              </div>
             </div>
           </div>
         </div>

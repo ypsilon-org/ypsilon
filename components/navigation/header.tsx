@@ -7,32 +7,60 @@ import React, { useEffect, useState } from "react";
 import { Users, Mail, UserPlus, LayoutDashboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
+const UNIT_COLORS: Record<string, { primary: string; text: string }> = {
+  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
+  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
+  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
+  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
+  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
+};
+
 const Header = () => {
   const pathname = usePathname() ?? "";
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [unitName, setUnitName] = useState<string | null>(null);
   const supabase = createClient();
 
-  // Auth check — untouched
   useEffect(() => {
     const checkAuth = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles_with_units")
+          .select("unit_name")
+          .eq("id", user.id)
+          .single();
+        setUnitName(profile?.unit_name ?? null);
+      }
       setLoading(false);
     };
+
     checkAuth();
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles_with_units")
+          .select("unit_name")
+          .eq("id", session.user.id)
+          .single();
+        setUnitName(profile?.unit_name ?? null);
+      } else {
+        setUnitName(null);
+      }
     });
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
 
-  // Scroll state for backdrop intensification
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -43,6 +71,8 @@ const Header = () => {
     { href: "/about", label: "About", icon: Users },
     { href: "/contact", label: "Contact", icon: Mail },
   ];
+
+  const unitColors = unitName ? UNIT_COLORS[unitName] : null;
 
   return (
     <>
@@ -61,9 +91,7 @@ const Header = () => {
 
         .gf-header {
           position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
+          top: 0; left: 0; right: 0;
           z-index: 100;
           height: var(--h-height);
           display: flex;
@@ -72,9 +100,9 @@ const Header = () => {
         }
 
         .gf-header.scrolled {
-          background: rgba(8, 6, 4, 0.92);
-          border-bottom: 1px solid rgba(200, 168, 75, 0.12);
-          box-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+          background: rgba(8,6,4,0.92);
+          border-bottom: 1px solid rgba(200,168,75,0.12);
+          box-shadow: 0 4px 40px rgba(0,0,0,0.6);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
         }
@@ -97,7 +125,13 @@ const Header = () => {
           gap: 2rem;
         }
 
-        /* ── LOGO ── */
+        .gf-logo-group {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-shrink: 0;
+        }
+
         .gf-logo {
           display: flex;
           align-items: center;
@@ -107,18 +141,15 @@ const Header = () => {
         }
 
         .gf-logo-img {
-          width: 32px;
-          height: 32px;
+          width: 32px; height: 32px;
           opacity: 0.9;
           transition: opacity 0.3s ease;
           filter: brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(5deg);
         }
-
         .gf-logo:hover .gf-logo-img { opacity: 1; }
 
         .gf-logo-divider {
-          width: 1px;
-          height: 22px;
+          width: 1px; height: 22px;
           background: linear-gradient(to bottom, transparent, rgba(200,168,75,0.4), transparent);
           flex-shrink: 0;
         }
@@ -134,10 +165,27 @@ const Header = () => {
           transition: opacity 0.3s;
           white-space: nowrap;
         }
-
         .gf-logo:hover .gf-logo-wordmark { opacity: 1; }
 
-        /* ── NAV ── */
+        .gf-unit-badge {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 0.65rem;
+          letter-spacing: 0.35em;
+          text-transform: uppercase;
+          font-weight: 400;
+          font-style: normal;
+          padding: 0.28rem 0.85rem;
+          border: 1px solid;
+          white-space: nowrap;
+          flex-shrink: 0;
+          animation: badgeFade 0.4s ease forwards;
+        }
+
+        @keyframes badgeFade {
+          from { opacity: 0; transform: translateY(-2px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
         .gf-nav {
           display: flex;
           align-items: center;
@@ -153,7 +201,7 @@ const Header = () => {
           font-weight: 400;
           letter-spacing: 0.3em;
           text-transform: uppercase;
-          color: rgba(237, 227, 208, 0.55);
+          color: rgba(237,227,208,0.55);
           text-decoration: none;
           padding: 0.55rem 1.2rem;
           position: relative;
@@ -161,13 +209,11 @@ const Header = () => {
           white-space: nowrap;
         }
 
-        /* Animated underline */
         .gf-nav-link::after {
           content: '';
           position: absolute;
           bottom: 0;
-          left: 1.2rem;
-          right: 1.2rem;
+          left: 1.2rem; right: 1.2rem;
           height: 1px;
           background: var(--h-gold);
           transform: scaleX(0);
@@ -177,33 +223,18 @@ const Header = () => {
 
         .gf-nav-link:hover { color: var(--h-bone); }
         .gf-nav-link:hover::after { transform: scaleX(1); }
+        .gf-nav-link.active { color: var(--h-bone); }
+        .gf-nav-link.active::after { transform: scaleX(1); background: var(--h-crimson); }
+        .gf-nav-link svg { opacity: 0.5; flex-shrink: 0; transition: opacity 0.3s; }
+        .gf-nav-link:hover svg, .gf-nav-link.active svg { opacity: 0.8; }
 
-        .gf-nav-link.active {
-          color: var(--h-bone);
-        }
-        .gf-nav-link.active::after {
-          transform: scaleX(1);
-          background: var(--h-crimson);
-        }
-
-        .gf-nav-link svg {
-          opacity: 0.5;
-          flex-shrink: 0;
-          transition: opacity 0.3s;
-        }
-        .gf-nav-link:hover svg,
-        .gf-nav-link.active svg { opacity: 0.8; }
-
-        /* Separator */
         .gf-sep {
-          width: 1px;
-          height: 20px;
+          width: 1px; height: 20px;
           background: linear-gradient(to bottom, transparent, rgba(200,168,75,0.25), transparent);
           margin: 0 0.5rem;
           flex-shrink: 0;
         }
 
-        /* ── CTA BUTTON ── */
         .gf-cta {
           display: flex;
           align-items: center;
@@ -235,23 +266,16 @@ const Header = () => {
 
         .gf-cta:hover::before { transform: translateX(0); }
         .gf-cta:hover { border-color: var(--h-crimson); }
-
-        .gf-cta span,
-        .gf-cta svg { position: relative; z-index: 1; }
-
-        .gf-cta.active {
-          background: var(--h-crimson);
-          border-color: var(--h-crimson);
-        }
+        .gf-cta span, .gf-cta svg { position: relative; z-index: 1; }
+        .gf-cta.active { background: var(--h-crimson); border-color: var(--h-crimson); }
         .gf-cta.active::before { transform: translateX(0); }
-
         .gf-cta svg { opacity: 0.8; flex-shrink: 0; }
 
-        /* ── MOBILE ── */
         @media (max-width: 640px) {
           .gf-nav-link span { display: none; }
           .gf-logo-wordmark { display: none; }
           .gf-logo-divider { display: none; }
+          .gf-unit-badge { display: none; }
           .gf-cta span { display: none; }
           .gf-cta { padding: 0.65rem 0.9rem; }
           .gf-nav-link { padding: 0.55rem 0.8rem; }
@@ -261,21 +285,36 @@ const Header = () => {
 
       <header className={`gf-header ${scrolled ? "scrolled" : "top"}`}>
         <div className="gf-header-inner">
-          {/* Logo */}
-          <Link href="/" className="gf-logo">
-            <Image
-              src="/ypsilon-logo.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-              priority
-              className="gf-logo-img"
-            />
-            <span className="gf-logo-divider" />
-            <span className="gf-logo-wordmark">the name.</span>
-          </Link>
+          {/* Logo + conditional unit badge */}
+          <div className="gf-logo-group">
+            <Link href="/" className="gf-logo">
+              <Image
+                src="/ypsilon-logo.svg"
+                alt="Logo"
+                width={32}
+                height={32}
+                priority
+                className="gf-logo-img"
+              />
+              <span className="gf-logo-divider" />
+              <span className="gf-logo-wordmark">the name.</span>
+            </Link>
 
-          {/* Nav links */}
+            {!loading && isAuthenticated && unitName && unitColors && (
+              <span
+                className="gf-unit-badge"
+                style={{
+                  borderColor: `${unitColors.primary}45`,
+                  color: unitColors.text,
+                  backgroundColor: `${unitColors.primary}0D`,
+                }}
+              >
+                {unitName}
+              </span>
+            )}
+          </div>
+
+          {/* Nav */}
           <nav className="gf-nav">
             {navLinks.map((link) => {
               const isActive =
@@ -295,7 +334,6 @@ const Header = () => {
 
             <span className="gf-sep" />
 
-            {/* Auth CTA */}
             {!loading &&
               (isAuthenticated ? (
                 <Link
