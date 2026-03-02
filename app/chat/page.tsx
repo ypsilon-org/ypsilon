@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import UnitChat from "@/components/UnitChat";
+import ChatTabs from "@/components/ChatTabs";
 
 export default async function ChatPage() {
   const supabase = await createClient();
@@ -19,16 +19,14 @@ export default async function ChatPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !profile.unit_id) {
+  if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            No Unit Assigned
+            Profile Not Found
           </h2>
-          <p className="text-gray-600">
-            You need to be assigned to a unit to access the chat.
-          </p>
+          <p className="text-gray-600">Unable to load your profile.</p>
         </div>
       </div>
     );
@@ -37,7 +35,7 @@ export default async function ChatPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)]">
-        <UnitChat
+        <ChatTabs
           userId={user.id}
           username={profile.username}
           unitId={profile.unit_id}
