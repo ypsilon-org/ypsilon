@@ -23,11 +23,11 @@ interface GeneralChatProps {
 
 // Unit colors mapping
 const UNIT_COLORS: { [key: string]: string } = {
-  Einherjar: "text-purple-600",
-  "Legio X Equestris": "text-red-600",
-  Myrmidons: "text-blue-600",
-  "Narayani Sena": "text-orange-600",
-  Spartans: "text-green-600",
+  Einherjar: "text-sky-600",
+  "Legio X Equestris": "text-purple-600",
+  Myrmidons: "text-green-600",
+  "Narayani Sena": "text-yellow-600",
+  Spartans: "text-orange-600",
 };
 
 export default function GeneralChat({

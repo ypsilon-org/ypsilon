@@ -5,19 +5,6 @@ import Link from "next/link";
 import TaskAssignForm from "@/components/TaskAssignForm";
 import TaskApproveButtons from "@/components/TaskApproveButtons";
 
-const RANKS = [
-  { name: "Recruit", min: 0, max: 199 },
-  { name: "Warrior", min: 200, max: 499 },
-  { name: "Veteran", min: 500, max: 999 },
-  { name: "Champion", min: 1000, max: 1999 },
-  { name: "Warlord", min: 2000, max: 3999 },
-  { name: "Commander", min: 4000, max: 7999 },
-  { name: "Legend", min: 8000, max: Infinity },
-];
-function getRankName(pts: number) {
-  return RANKS.find((r) => pts >= r.min && pts <= r.max)?.name ?? "Recruit";
-}
-
 const UNIT_COLORS = {
   Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
   "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
@@ -41,9 +28,12 @@ export default async function LeaderDashboard() {
     .single();
   if (!profile?.is_leader) redirect("/dashboard");
 
+  // ── KEY CHANGE: profiles_with_rank instead of profiles ──────────────────
   const { data: unitMembers, count: totalMembers } = await supabase
-    .from("profiles")
-    .select("id, username, total_points, created_at", { count: "exact" })
+    .from("profiles_with_rank")
+    .select("id, username, total_points, rank_name, rank_numeral, created_at", {
+      count: "exact",
+    })
     .eq("unit_id", profile.unit_id)
     .order("total_points", { ascending: false });
 
@@ -119,11 +109,12 @@ export default async function LeaderDashboard() {
         .task-meta{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
         .task-pts{font-family:'Cormorant Garamond',serif;font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:400;}
         .task-assignee{font-family:'Cormorant Garamond',serif;font-size:.72rem;font-style:italic;color:rgba(201,180,154,.4);font-weight:300;}
+        .task-assignee-rank{font-family:'Cormorant Garamond',serif;font-size:.68rem;font-style:italic;color:rgba(201,180,154,.28);font-weight:300;}
         .task-actions{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem;}
         .task-badge{font-family:'Cormorant Garamond',serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;padding:.22rem .7rem;border:1px solid;font-weight:400;white-space:nowrap;}
         .task-empty{text-align:center;padding:3rem 2rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:rgba(201,180,154,.28);font-weight:300;}
         .roster-table-wrap{overflow-x:auto;border:1px solid rgba(200,168,75,.1);}
-        .roster-table{width:100%;border-collapse:collapse;min-width:560px;}
+        .roster-table{width:100%;border-collapse:collapse;min-width:580px;}
         .roster-table thead tr{border-bottom:1px solid rgba(200,168,75,.1);background:rgba(5,3,2,.5);}
         .roster-table th{padding:1rem 1.5rem;text-align:left;font-family:'Cormorant Garamond',serif;font-size:.65rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;white-space:nowrap;}
         .roster-table tbody tr{border-bottom:1px solid rgba(200,168,75,.06);transition:background .25s ease;}
@@ -132,7 +123,9 @@ export default async function LeaderDashboard() {
         .roster-table td{padding:1.1rem 1.5rem;vertical-align:middle;}
         .td-username{font-family:'EB Garamond',serif;font-size:1.02rem;font-style:italic;color:var(--bone);display:flex;align-items:center;gap:.7rem;}
         .you-badge{font-family:'Cormorant Garamond',serif;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;padding:.2rem .6rem;border:1px solid rgba(200,168,75,.3);color:rgba(200,168,75,.7);background:rgba(200,168,75,.06);font-style:normal;}
-        .td-rank{font-family:'Cormorant Garamond',serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;}
+        .td-rank{display:flex;align-items:baseline;gap:.55rem;}
+        .td-rank-numeral{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--gold);line-height:1;}
+        .td-rank-name{font-family:'Cormorant Garamond',serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;}
         .td-points{font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:var(--gold);}
         .td-missions{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-style:italic;color:rgba(201,180,154,.4);font-weight:300;}
         .notice{padding:1.5rem 2rem;border:1px solid;display:flex;gap:1.2rem;align-items:flex-start;}
@@ -244,6 +237,14 @@ export default async function LeaderDashboard() {
                           <span className="task-assignee">
                             @{task.assigned_username}
                           </span>
+                          {task.assignee_rank_name && (
+                            <span className="task-assignee-rank">
+                              {task.assignee_rank_numeral
+                                ? `${task.assignee_rank_numeral} · `
+                                : ""}
+                              {task.assignee_rank_name}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="task-actions">
@@ -320,6 +321,14 @@ export default async function LeaderDashboard() {
                           <span className="task-assignee">
                             @{task.assigned_username}
                           </span>
+                          {task.assignee_rank_name && (
+                            <span className="task-assignee-rank">
+                              {task.assignee_rank_numeral
+                                ? `${task.assignee_rank_numeral} · `
+                                : ""}
+                              {task.assignee_rank_name}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="task-actions">
@@ -385,9 +394,14 @@ export default async function LeaderDashboard() {
                               </div>
                             </td>
                             <td>
-                              <span className="td-rank">
-                                {getRankName(pts)}
-                              </span>
+                              <div className="td-rank">
+                                <span className="td-rank-numeral">
+                                  {member.rank_numeral}
+                                </span>
+                                <span className="td-rank-name">
+                                  {member.rank_name}
+                                </span>
+                              </div>
                             </td>
                             <td>
                               <span className="td-points">
