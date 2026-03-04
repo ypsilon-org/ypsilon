@@ -12,34 +12,80 @@ export default async function ChatPage() {
     redirect("/signin");
   }
 
-  // Get user profile with unit info
   const { data: profile } = await supabase
     .from("profiles_with_units")
-    .select("username, unit_id, unit_name")
+    .select("username, unit_id, unit_name, is_owner")
     .eq("id", user.id)
     .single();
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#080604",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "'EB Garamond', Georgia, serif",
+        }}
+      >
+        <div style={{ textAlign: "center", color: "#C9B49A" }}>
+          <p
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "0.7rem",
+              letterSpacing: "0.48em",
+              textTransform: "uppercase",
+              color: "#7D6328",
+              marginBottom: "1rem",
+            }}
+          >
+            Error
+          </p>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "2rem",
+              fontWeight: 700,
+              color: "#EDE3D0",
+              marginBottom: "0.75rem",
+            }}
+          >
             Profile Not Found
           </h2>
-          <p className="text-gray-600">Unable to load your profile.</p>
+          <p style={{ fontStyle: "italic", opacity: 0.5 }}>
+            Unable to load your profile.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)]">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#080604",
+        paddingTop: "clamp(5rem, 10vh, 7rem)",
+        paddingBottom: "2rem",
+        paddingLeft: "clamp(1rem, 3vw, 2rem)",
+        paddingRight: "clamp(1rem, 3vw, 2rem)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1300px",
+          margin: "0 auto",
+          height: "calc(100vh - clamp(7rem, 12vh, 9rem))",
+        }}
+      >
         <ChatTabs
           userId={user.id}
           username={profile.username}
           unitId={profile.unit_id}
           unitName={profile.unit_name}
+          isOwner={profile.is_owner ?? false}
         />
       </div>
     </div>

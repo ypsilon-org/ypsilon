@@ -4,6 +4,7 @@ import SignOut from "@/components/SignOut";
 import Link from "next/link";
 import TaskAssignForm from "@/components/TaskAssignForm";
 import TaskApproveButtons from "@/components/TaskApproveButtons";
+import AssignGodTask from "@/components/AssignGodTask";
 
 const UNIT_COLORS = {
   Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
@@ -28,7 +29,6 @@ export default async function LeaderDashboard() {
     .single();
   if (!profile?.is_leader) redirect("/dashboard");
 
-  // ── KEY CHANGE: profiles_with_rank instead of profiles ──────────────────
   const { data: unitMembers, count: totalMembers } = await supabase
     .from("profiles_with_rank")
     .select("id, username, total_points, rank_name, rank_numeral, created_at", {
@@ -51,6 +51,10 @@ export default async function LeaderDashboard() {
     .eq("unit_id", profile.unit_id)
     .order("created_at", { ascending: false });
 
+  // Separate godfather-dispatched tasks that need member assignment
+  const godTasks =
+    allTasks?.filter((t) => t.created_by_owner && t.status === "unassigned") ??
+    [];
   const pendingTasks =
     allTasks?.filter((t) => t.status === "pending_approval") ?? [];
   const activeTasks = allTasks?.filter((t) => t.status === "active") ?? [];
@@ -62,6 +66,11 @@ export default async function LeaderDashboard() {
     UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
       ? UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
       : DEFAULT_COLORS;
+
+  const members = (unitMembers ?? []).map((m) => ({
+    id: m.id,
+    username: m.username,
+  }));
 
   return (
     <div className="leader-root">
@@ -79,8 +88,9 @@ export default async function LeaderDashboard() {
         .page-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--bone);line-height:.95;margin-bottom:.2em;}
         .page-title em{font-style:italic;display:block;}
         .page-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;font-weight:300;color:rgba(201,180,154,.45);margin-top:.8rem;max-width:520px;line-height:1.65;}
-        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.08);}
-        @media(max-width:720px){.stats-grid{grid-template-columns:1fr;}}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.08);}
+        @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:480px){.stats-grid{grid-template-columns:1fr;}}
         .stat-card{background:var(--dark);padding:2.5rem 2.2rem;position:relative;overflow:hidden;transition:background .4s ease;}
         .stat-card::after{content:'';position:absolute;top:0;left:0;width:1px;height:0;background:var(--gold);transition:height .6s cubic-bezier(.77,0,.175,1);}
         .stat-card:hover{background:#0E0B07;}.stat-card:hover::after{height:100%;}
@@ -100,18 +110,20 @@ export default async function LeaderDashboard() {
         .section-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;font-style:italic;color:var(--bone);margin-bottom:1.5rem;}
         .task-list{display:flex;flex-direction:column;gap:1px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.08);}
         .task-row{background:var(--dark);padding:1.6rem 2rem;display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:center;position:relative;overflow:hidden;transition:background .3s ease;}
-        @media(max-width:560px){.task-row{grid-template-columns:1fr;}}
+        @media(max-width:640px){.task-row{grid-template-columns:1fr;}}
         .task-row:hover{background:#0E0B07;}
         .task-accent-bar{position:absolute;top:0;left:0;width:2px;height:0;transition:height .4s ease;}
         .task-row:hover .task-accent-bar{height:100%;}
         .task-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;color:var(--bone);margin-bottom:.25rem;}
         .task-desc{font-family:'EB Garamond',serif;font-size:.95rem;font-style:italic;color:rgba(201,180,154,.5);line-height:1.5;margin-bottom:.5rem;}
-        .task-meta{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
+        .task-meta{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:.5rem;}
         .task-pts{font-family:'Cormorant Garamond',serif;font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:400;}
         .task-assignee{font-family:'Cormorant Garamond',serif;font-size:.72rem;font-style:italic;color:rgba(201,180,154,.4);font-weight:300;}
         .task-assignee-rank{font-family:'Cormorant Garamond',serif;font-size:.68rem;font-style:italic;color:rgba(201,180,154,.28);font-weight:300;}
         .task-actions{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem;}
         .task-badge{font-family:'Cormorant Garamond',serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;padding:.22rem .7rem;border:1px solid;font-weight:400;white-space:nowrap;}
+        .god-banner{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;padding:.6rem 1rem;border:1px solid rgba(139,10,10,.25);background:rgba(139,10,10,.05);}
+        .god-banner-text{font-family:'Cormorant Garamond',serif;font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(220,150,150,.6);font-weight:300;font-style:italic;}
         .task-empty{text-align:center;padding:3rem 2rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:rgba(201,180,154,.28);font-weight:300;}
         .roster-table-wrap{overflow-x:auto;border:1px solid rgba(200,168,75,.1);}
         .roster-table{width:100%;border-collapse:collapse;min-width:580px;}
@@ -140,6 +152,7 @@ export default async function LeaderDashboard() {
 
       <main className="leader-main">
         <div className="leader-stack">
+          {/* HEADER */}
           <div>
             <p className="page-eyebrow">Command Quarters</p>
             <h1 className="page-title">
@@ -152,6 +165,7 @@ export default async function LeaderDashboard() {
             </p>
           </div>
 
+          {/* STATS */}
           <div className="stats-grid">
             <div className="stat-card">
               <div
@@ -184,6 +198,30 @@ export default async function LeaderDashboard() {
                 className="stat-top-bar"
                 style={{
                   background:
+                    godTasks.length > 0
+                      ? "linear-gradient(to right,#8B0A0A,transparent)"
+                      : `linear-gradient(to right,${unitColors.primary},transparent)`,
+                }}
+              />
+              <p className="stat-label">Godfather Orders</p>
+              <p
+                className="stat-value"
+                style={{
+                  color: godTasks.length > 0 ? "#E07070" : unitColors.text,
+                }}
+              >
+                {godTasks.length}
+              </p>
+              <p className="stat-sub">
+                {godTasks.length === 1 ? "order needs" : "orders need"}{" "}
+                assignment
+              </p>
+            </div>
+            <div className="stat-card">
+              <div
+                className="stat-top-bar"
+                style={{
+                  background:
                     pendingTasks.length > 0
                       ? "linear-gradient(to right,#A6FF00,transparent)"
                       : `linear-gradient(to right,${unitColors.primary},transparent)`,
@@ -207,6 +245,86 @@ export default async function LeaderDashboard() {
             </div>
           </div>
 
+          {/* GODFATHER ORDERS — needs member assignment */}
+          {godTasks.length > 0 && (
+            <div className="panel">
+              <span className="panel-corner-tr" />
+              <span className="panel-corner-bl" />
+              <div
+                className="panel-top-bar"
+                style={{
+                  background: "linear-gradient(to right,#8B0A0A,transparent)",
+                }}
+              />
+              <div className="panel-body">
+                <div className="god-banner">
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="rgba(220,100,100,.6)"
+                    strokeWidth="1.5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                    />
+                  </svg>
+                  <span className="god-banner-text">
+                    Orders from the Godfather — assign each to a soldier
+                  </span>
+                </div>
+                <p className="section-eyebrow">Direct Decree</p>
+                <h2 className="section-title">Godfather's Orders</h2>
+                <div className="task-list">
+                  {godTasks.map((task) => (
+                    <div key={task.id} className="task-row">
+                      <div
+                        className="task-accent-bar"
+                        style={{ background: "#8B0A0A" }}
+                      />
+                      <div>
+                        <p className="task-title">{task.title}</p>
+                        {task.description && (
+                          <p className="task-desc">{task.description}</p>
+                        )}
+                        <div className="task-meta">
+                          <span className="task-pts">✦ {task.points} pts</span>
+                          <span
+                            className="task-assignee"
+                            style={{ color: "rgba(220,100,100,.45)" }}
+                          >
+                            from the Godfather
+                          </span>
+                        </div>
+                        <AssignGodTask
+                          taskId={task.id}
+                          members={members}
+                          unitColor={unitColors.primary}
+                        />
+                      </div>
+                      <div className="task-actions">
+                        <span
+                          className="task-badge"
+                          style={{
+                            borderColor: "rgba(139,10,10,.4)",
+                            color: "#E07070",
+                            backgroundColor: "rgba(139,10,10,.07)",
+                          }}
+                        >
+                          Unassigned
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PENDING APPROVAL */}
           {pendingTasks.length > 0 && (
             <div className="panel">
               <span className="panel-corner-tr" />
@@ -267,6 +385,7 @@ export default async function LeaderDashboard() {
             </div>
           )}
 
+          {/* ISSUE OWN ORDERS */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -282,15 +401,13 @@ export default async function LeaderDashboard() {
               <TaskAssignForm
                 unitId={profile.unit_id}
                 leaderId={user.id}
-                members={(unitMembers ?? []).map((m) => ({
-                  id: m.id,
-                  username: m.username,
-                }))}
+                members={members}
                 unitColor={unitColors.primary}
               />
             </div>
           </div>
 
+          {/* ACTIVE MISSIONS */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -329,6 +446,14 @@ export default async function LeaderDashboard() {
                               {task.assignee_rank_name}
                             </span>
                           )}
+                          {task.created_by_owner && (
+                            <span
+                              className="task-assignee"
+                              style={{ color: "rgba(220,100,100,.4)" }}
+                            >
+                              · godfather order
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="task-actions">
@@ -354,6 +479,7 @@ export default async function LeaderDashboard() {
             </div>
           </div>
 
+          {/* UNIT ROSTER */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -425,6 +551,7 @@ export default async function LeaderDashboard() {
             </div>
           </div>
 
+          {/* COMPLETED ARCHIVE */}
           {completedTasks.length > 0 && (
             <div className="panel">
               <span className="panel-corner-tr" />
@@ -479,6 +606,7 @@ export default async function LeaderDashboard() {
             </div>
           )}
 
+          {/* FOOTER */}
           <div
             className="notice"
             style={{
