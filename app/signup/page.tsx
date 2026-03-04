@@ -56,6 +56,17 @@ export default function SignUpPage() {
     return () => clearTimeout(id);
   }, [username, supabase]);
 
+  const getRedirectPath = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_owner, is_leader")
+      .eq("id", userId)
+      .single();
+    if (profile?.is_owner) return "/godmode";
+    if (profile?.is_leader) return "/leader";
+    return "/dashboard";
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -154,8 +165,9 @@ export default function SignUpPage() {
           type: "success",
           text: "Account created! Redirecting...",
         });
+        const path = await getRedirectPath(authData.user.id);
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push(path);
           router.refresh();
         }, 1000);
       } else {
