@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getUnitColor } from "@/lib/unitColors";
 
 interface Message {
   id: string;
@@ -20,14 +21,6 @@ interface GeneralChatProps {
   unitId: string | null;
   unitName: string | null;
 }
-
-const UNIT_COLORS: Record<string, string> = {
-  Einherjar: "#6FF3FF",
-  "Legio X Equestris": "#8A3FFC",
-  Myrmidons: "#A6FF00",
-  "Narayani Sena": "#FFC83D",
-  Spartans: "#FF6A00",
-};
 
 const chatStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
@@ -374,6 +367,16 @@ const chatStyles = `
     color: rgba(201,180,154,0.25);
     letter-spacing: 0.25em;
   }
+
+  @media (max-width: 640px) {
+    .gchat-header { padding: 0.9rem 1rem; }
+    .gchat-header-title { font-size: 0.95rem; }
+    .gchat-messages { padding: 0.9rem 0.75rem; gap: 0.2rem; }
+    .msg-bubble { max-width: 85%; }
+    .gchat-input-bar { padding: 0.65rem 0.75rem; gap: 0.5rem; }
+    .gchat-input { padding: 0.55rem 0.75rem; font-size: 0.95rem; }
+    .gchat-send-btn { padding: 0.55rem 1rem; font-size: 0.6rem; letter-spacing: 0.2em; }
+  }
 `;
 
 export default function GeneralChat({
@@ -535,9 +538,7 @@ export default function GeneralChat({
             ) : (
               messages.map((msg) => {
                 const isMine = msg.user_id === userId;
-                const unitColor = msg.unit_name
-                  ? (UNIT_COLORS[msg.unit_name] ?? "#C8A84B")
-                  : "#C8A84B";
+                const unitColor = getUnitColor(msg.unit_id).primary;
                 return (
                   <div
                     key={msg.id}

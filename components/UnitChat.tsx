@@ -222,6 +222,15 @@ export default function UnitChat({
     .uchat-send-btn span{position:relative;z-index:1;}
     .uchat-send-btn:disabled{opacity:0.3;cursor:not-allowed;}
     .uchat-loading{flex:1;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:0.82rem;font-style:italic;color:rgba(201,180,154,0.25);letter-spacing:0.25em;}
+    @media(max-width:640px){
+      .uchat-header{padding:0.9rem 1rem;}
+      .uchat-header-title{font-size:0.95rem;}
+      .uchat-messages{padding:0.9rem 0.75rem;gap:0.2rem;}
+      .msg-bubble{max-width:85%;}
+      .uchat-input-bar{padding:0.65rem 0.75rem;gap:0.5rem;}
+      .uchat-input{padding:0.55rem 0.75rem;font-size:0.95rem;}
+      .uchat-send-btn{padding:0.55rem 1rem;font-size:0.6rem;letter-spacing:0.2em;}
+    }
   `;
 
   return (

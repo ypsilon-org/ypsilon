@@ -22,7 +22,7 @@ export default async function ChatPage() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
           background: "#080604",
           display: "flex",
           alignItems: "center",
@@ -63,31 +63,45 @@ export default async function ChatPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#080604",
-        paddingTop: "clamp(5rem, 10vh, 7rem)",
-        paddingBottom: "2rem",
-        paddingLeft: "clamp(1rem, 3vw, 2rem)",
-        paddingRight: "clamp(1rem, 3vw, 2rem)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1300px",
-          margin: "0 auto",
-          height: "calc(100vh - clamp(7rem, 12vh, 9rem))",
-        }}
-      >
-        <ChatTabs
-          userId={user.id}
-          username={profile.username}
-          unitId={profile.unit_id}
-          unitName={profile.unit_name}
-          isOwner={profile.is_owner ?? false}
-        />
+    <>
+      <style>{`
+        .chat-page-root {
+          height: 100dvh;
+          background: #080604;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          padding-top: 72px;
+        }
+        .chat-page-inner {
+          flex: 1;
+          min-height: 0;
+          padding: clamp(0.5rem, 1.5vw, 1.25rem);
+        }
+        .chat-page-wrap {
+          height: 100%;
+          max-width: 1300px;
+          margin: 0 auto;
+        }
+        @media (max-width: 600px) {
+          .chat-page-inner {
+            padding: 0;
+          }
+        }
+      `}</style>
+      <div className="chat-page-root">
+        <div className="chat-page-inner">
+          <div className="chat-page-wrap">
+            <ChatTabs
+              userId={user.id}
+              username={profile.username}
+              unitId={profile.unit_id}
+              unitName={profile.unit_name}
+              isOwner={profile.is_owner ?? false}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
