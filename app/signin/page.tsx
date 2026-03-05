@@ -44,39 +44,6 @@ export default function SignInPage() {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!identifier) {
-      setMessage({ type: "error", text: "Please enter your email first" });
-      return;
-    }
-    let email = identifier;
-    if (!identifier.includes("@")) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("username", identifier.toLowerCase())
-        .single();
-      if (!profile) {
-        setMessage({ type: "error", text: "User not found" });
-        return;
-      }
-      email = profile.email;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-    if (error) {
-      setMessage({ type: "error", text: error.message });
-    } else {
-      setMessage({
-        type: "success",
-        text: "Password reset email sent. Check your inbox.",
-      });
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="auth-root">
       <style>{`
@@ -194,13 +161,6 @@ export default function SignInPage() {
           border-color: rgba(139,10,10,0.45);
           box-shadow: 0 0 0 1px rgba(139,10,10,0.12), inset 0 0 18px rgba(139,10,10,0.03);
         }
-        .forgot-row { display: flex; justify-content: flex-end; margin-top: -0.4rem; }
-        .forgot-btn {
-          font-family: 'Cormorant Garamond', serif; font-size: 0.8rem; font-style: italic;
-          letter-spacing: 0.1em; color: rgba(200,168,75,0.38);
-          background: none; border: none; cursor: pointer; padding: 0; transition: color 0.3s;
-        }
-        .forgot-btn:hover { color: rgba(200,168,75,0.72); }
         .auth-message {
           padding: 0.85rem 1rem; font-family: 'Cormorant Garamond', serif;
           font-size: 0.92rem; font-style: italic; letter-spacing: 0.02em; border: 1px solid;
@@ -287,15 +247,6 @@ export default function SignInPage() {
                 placeholder="Your secret"
               />
             </div>
-          </div>
-          <div className="forgot-row">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="forgot-btn"
-            >
-              Forgot your password?
-            </button>
           </div>
           {message.text && (
             <div className={`auth-message ${message.type}`}>{message.text}</div>
