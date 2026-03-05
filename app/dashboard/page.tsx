@@ -2,16 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import SignOut from "@/components/SignOut";
 import TaskCompleteButton from "@/components/TaskCompleteButton";
-
-// ── UNIT COLORS ───────────────────────────────────────────────────────────────
-const UNIT_COLORS = {
-  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
-  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
-  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
-  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
-  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
-};
-const DEFAULT_COLORS = { primary: "#C8A84B", text: "#C8A84B" };
+import { getUnitColor } from "@/lib/unitColors";
 
 const STATUS_CONFIG = {
   active: { label: "Active", color: "#C8A84B" },
@@ -27,14 +18,29 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/signin");
 
-  // Profile + unit info
+  // Profile + unit info from view
   const { data: profile } = await supabase
     .from("profiles_with_units")
     .select("username, full_name, unit_name, unit_description, unit_id")
     .eq("id", user.id)
     .single();
 
-  // Rank data — from DB via profiles_with_rank view
+  // Always fetch live unit data so renames appear immediately
+  let liveUnitName = profile?.unit_name ?? null;
+  let liveUnitDescription = profile?.unit_description ?? null;
+  if (profile?.unit_id) {
+    const { data: unitRow } = await supabase
+      .from("units")
+      .select("name, description")
+      .eq("id", profile.unit_id)
+      .single();
+    if (unitRow) {
+      liveUnitName = unitRow.name;
+      liveUnitDescription = unitRow.description;
+    }
+  }
+
+  // Rank data
   const { data: rankData } = await supabase
     .from("profiles_with_rank")
     .select(
@@ -47,13 +53,11 @@ export default async function DashboardPage() {
   const rankName = rankData?.rank_name ?? "Private";
   const rankNumeral = rankData?.rank_numeral ?? "I";
   const rankMinPts = rankData?.rank_min_points ?? 0;
-  const rankMaxPts = rankData?.rank_max_points ?? null;
   const nextRankName = rankData?.next_rank_name ?? null;
   const nextRankMin = rankData?.next_rank_min_points ?? null;
   const pointsToNext = rankData?.points_to_next_rank ?? 0;
   const progressPct = rankData?.rank_progress_pct ?? 0;
 
-  // Unit member count
   let unitMemberCount = 0;
   if (profile?.unit_id) {
     const { count } = await supabase
@@ -63,7 +67,6 @@ export default async function DashboardPage() {
     unitMemberCount = count || 0;
   }
 
-  // Tasks
   const { data: tasks } = await supabase
     .from("tasks_with_profiles")
     .select("*")
@@ -76,11 +79,8 @@ export default async function DashboardPage() {
   const completedTasks = tasks?.filter((t) => t.status === "completed") ?? [];
   const rejectedTasks = tasks?.filter((t) => t.status === "rejected") ?? [];
 
-  const unitColors =
-    profile?.unit_name &&
-    UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
-      ? UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
-      : DEFAULT_COLORS;
+  // Color keyed by unit_id — rename-safe
+  const unitColors = getUnitColor(profile?.unit_id);
 
   return (
     <div className="dash-root">
@@ -93,13 +93,10 @@ export default async function DashboardPage() {
         .dash-root::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(139,10,10,.05) 0%,transparent 60%),linear-gradient(to bottom,#130A04 0%,var(--ink) 20%);pointer-events:none;z-index:0;}
         .dash-main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:clamp(5rem,10vw,8rem) clamp(1.5rem,4vw,3rem) clamp(3rem,6vw,5rem);}
         .dash-stack{display:flex;flex-direction:column;gap:2rem;}
-
         .page-eyebrow{font-family:'Cormorant Garamond',serif;font-size:.7rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;margin-bottom:.6rem;display:flex;align-items:center;gap:.8rem;}
         .page-eyebrow::before{content:'';display:inline-block;width:28px;height:1px;background:var(--gold-dim);opacity:.5;}
         .page-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:900;color:var(--bone);line-height:.95;letter-spacing:-.01em;}
         .page-title em{font-style:italic;display:block;}
-
-        /* RANK CARD */
         .rank-card{background:linear-gradient(135deg,rgba(18,12,6,.97),rgba(10,7,4,.99));border:1px solid rgba(200,168,75,.12);position:relative;overflow:hidden;padding:2.5rem 3rem;}
         .rank-card::before,.rank-card::after{content:'';position:absolute;width:26px;height:26px;border-color:rgba(200,168,75,.22);border-style:solid;}
         .rank-card::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
@@ -120,8 +117,6 @@ export default async function DashboardPage() {
         .rank-pts-block{text-align:right;flex-shrink:0;}
         .rank-pts-value{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,5vw,4rem);font-weight:900;font-style:italic;line-height:1;color:var(--gold);}
         .rank-pts-label{font-family:'Cormorant Garamond',serif;font-size:.68rem;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;margin-top:.25rem;}
-
-        /* PANEL */
         .panel{background:linear-gradient(135deg,rgba(18,12,6,.97),rgba(10,7,4,.99));border:1px solid rgba(200,168,75,.12);position:relative;overflow:hidden;}
         .panel::before,.panel::after{content:'';position:absolute;width:26px;height:26px;border-color:rgba(200,168,75,.22);border-style:solid;}
         .panel::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
@@ -131,8 +126,6 @@ export default async function DashboardPage() {
         .panel-corner-bl{bottom:-1px;left:-1px;border-width:0 0 1px 1px;}
         .panel-top-bar{height:2px;width:100%;}
         .panel-body{padding:clamp(2rem,4vw,3rem);}
-
-        /* PROFILE GRID */
         .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start;}
         @media(max-width:700px){.profile-grid{grid-template-columns:1fr;}}
         .info-stack{display:flex;flex-direction:column;gap:1.4rem;}
@@ -146,8 +139,6 @@ export default async function DashboardPage() {
         .unit-name{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;font-style:italic;line-height:1;margin-bottom:.6rem;}
         .unit-divider{width:28px;height:1px;opacity:.35;margin-bottom:1rem;}
         .unit-description{font-family:'EB Garamond',serif;font-size:.98rem;font-style:italic;color:rgba(201,180,154,.55);line-height:1.7;}
-
-        /* STATS */
         .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
         @media(max-width:560px){.stats-grid{grid-template-columns:1fr;}}
         .stat-card{background:linear-gradient(135deg,rgba(18,12,6,.97),rgba(10,7,4,.99));border:1px solid rgba(200,168,75,.1);padding:2rem;position:relative;overflow:hidden;}
@@ -158,13 +149,9 @@ export default async function DashboardPage() {
         .stat-label{font-family:'Cormorant Garamond',serif;font-size:.68rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;margin-bottom:.8rem;}
         .stat-value{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;font-style:italic;line-height:1;margin-bottom:.4rem;}
         .stat-sub{font-family:'Cormorant Garamond',serif;font-size:.82rem;font-style:italic;color:rgba(201,180,154,.4);font-weight:300;}
-
-        /* SECTION HEADER */
         .section-eyebrow{font-family:'Cormorant Garamond',serif;font-size:.68rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gold-dim);font-weight:300;margin-bottom:.5rem;display:flex;align-items:center;gap:.7rem;}
         .section-eyebrow::before{content:'';display:inline-block;width:22px;height:1px;background:var(--gold-dim);opacity:.45;}
         .section-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;font-style:italic;color:var(--bone);margin-bottom:1.5rem;}
-
-        /* TASK LIST */
         .task-list{display:flex;flex-direction:column;gap:1px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.08);}
         .task-row{background:var(--dark);padding:1.6rem 2rem;display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:center;position:relative;overflow:hidden;transition:background .3s ease;}
         @media(max-width:560px){.task-row{grid-template-columns:1fr;}}
@@ -180,8 +167,6 @@ export default async function DashboardPage() {
         .task-actions{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem;}
         .task-badge{font-family:'Cormorant Garamond',serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;padding:.22rem .7rem;border:1px solid;font-weight:400;white-space:nowrap;}
         .task-empty{text-align:center;padding:3.5rem 2rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:rgba(201,180,154,.28);font-weight:300;}
-
-        /* NOTICE */
         .notice{padding:1.5rem 2rem;border:1px solid;display:flex;gap:1.2rem;align-items:flex-start;}
         .notice-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem;}
         .notice-content{flex:1;}
@@ -192,7 +177,6 @@ export default async function DashboardPage() {
 
       <main className="dash-main">
         <div className="dash-stack">
-          {/* PAGE HEADER */}
           <div>
             <p className="page-eyebrow">Members' Quarters</p>
             <h1 className="page-title">
@@ -203,7 +187,7 @@ export default async function DashboardPage() {
             </h1>
           </div>
 
-          {/* RANK CARD — data from DB */}
+          {/* RANK CARD */}
           <div className="rank-card">
             <span className="rank-corner-tr" />
             <span className="rank-corner-bl" />
@@ -348,7 +332,7 @@ export default async function DashboardPage() {
                     </div>
                   )}
                 </div>
-                {profile?.unit_name && (
+                {liveUnitName && (
                   <div
                     className="unit-panel"
                     style={{
@@ -357,17 +341,16 @@ export default async function DashboardPage() {
                     }}
                   >
                     <p className="unit-label">Your Allegiance</p>
+                    {/* Live unit name from DB — updates when leader renames */}
                     <p className="unit-name" style={{ color: unitColors.text }}>
-                      {profile.unit_name}
+                      {liveUnitName}
                     </p>
                     <div
                       className="unit-divider"
                       style={{ background: unitColors.primary }}
                     />
-                    {profile.unit_description && (
-                      <p className="unit-description">
-                        {profile.unit_description}
-                      </p>
+                    {liveUnitDescription && (
+                      <p className="unit-description">{liveUnitDescription}</p>
                     )}
                   </div>
                 )}
@@ -376,7 +359,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* STATS */}
-          {profile?.unit_name && (
+          {liveUnitName && (
             <div className="stats-grid">
               <div className="stat-card">
                 <div
@@ -391,7 +374,7 @@ export default async function DashboardPage() {
                 </p>
                 <p className="stat-sub">
                   {unitMemberCount === 1 ? "soldier" : "soldiers"} in{" "}
-                  {profile.unit_name}
+                  {liveUnitName}
                 </p>
               </div>
               <div className="stat-card">
@@ -479,7 +462,7 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* PENDING APPROVAL */}
+          {/* PENDING */}
           {pendingTasks.length > 0 && (
             <div className="panel">
               <span className="panel-corner-tr" />

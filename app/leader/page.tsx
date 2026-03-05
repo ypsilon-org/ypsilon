@@ -5,15 +5,8 @@ import Link from "next/link";
 import TaskAssignForm from "@/components/TaskAssignForm";
 import TaskApproveButtons from "@/components/TaskApproveButtons";
 import AssignGodTask from "@/components/AssignGodTask";
-
-const UNIT_COLORS = {
-  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
-  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
-  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
-  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
-  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
-};
-const DEFAULT_COLORS = { primary: "#C8A84B", text: "#C8A84B" };
+import EditUnitForm from "@/components/EditUnitForm";
+import { getUnitColor } from "@/lib/unitColors";
 
 export default async function LeaderDashboard() {
   const supabase = await createClient();
@@ -28,6 +21,17 @@ export default async function LeaderDashboard() {
     .eq("id", user.id)
     .single();
   if (!profile?.is_leader) redirect("/dashboard");
+
+  // Fetch live unit row so renames are always fresh
+  const { data: unitData } = await supabase
+    .from("units")
+    .select("id, name, description")
+    .eq("id", profile.unit_id)
+    .single();
+
+  const unitName = unitData?.name ?? profile.unit_name ?? "";
+  const unitDescription =
+    unitData?.description ?? profile.unit_description ?? "";
 
   const { data: unitMembers, count: totalMembers } = await supabase
     .from("profiles_with_rank")
@@ -51,7 +55,6 @@ export default async function LeaderDashboard() {
     .eq("unit_id", profile.unit_id)
     .order("created_at", { ascending: false });
 
-  // Separate godfather-dispatched tasks that need member assignment
   const godTasks =
     allTasks?.filter((t) => t.created_by_owner && t.status === "unassigned") ??
     [];
@@ -61,11 +64,8 @@ export default async function LeaderDashboard() {
   const completedTasks =
     allTasks?.filter((t) => t.status === "completed") ?? [];
 
-  const unitColors =
-    profile?.unit_name &&
-    UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
-      ? UNIT_COLORS[profile.unit_name as keyof typeof UNIT_COLORS]
-      : DEFAULT_COLORS;
+  // Color keyed by unit_id — immune to renames
+  const unitColors = getUnitColor(profile.unit_id);
 
   const members = (unitMembers ?? []).map((m) => ({
     id: m.id,
@@ -157,7 +157,7 @@ export default async function LeaderDashboard() {
             <p className="page-eyebrow">Command Quarters</p>
             <h1 className="page-title">
               The High Command
-              <em style={{ color: unitColors.text }}>{profile.unit_name}</em>
+              <em style={{ color: unitColors.text }}>{unitName}</em>
             </h1>
             <p className="page-sub">
               Welcome, Commander @{profile.username}. The fate of your unit
@@ -178,7 +178,7 @@ export default async function LeaderDashboard() {
               <p className="stat-value" style={{ color: unitColors.text }}>
                 {totalMembers || 0}
               </p>
-              <p className="stat-sub">sworn to {profile.unit_name}</p>
+              <p className="stat-sub">sworn to {unitName}</p>
             </div>
             <div className="stat-card">
               <div
@@ -245,7 +245,29 @@ export default async function LeaderDashboard() {
             </div>
           </div>
 
-          {/* GODFATHER ORDERS — needs member assignment */}
+          {/* EDIT UNIT IDENTITY */}
+          <div className="panel">
+            <span className="panel-corner-tr" />
+            <span className="panel-corner-bl" />
+            <div
+              className="panel-top-bar"
+              style={{
+                background: `linear-gradient(to right,${unitColors.primary},transparent)`,
+              }}
+            />
+            <div className="panel-body">
+              <p className="section-eyebrow">Unit Identity</p>
+              <h2 className="section-title">Rename Your Unit</h2>
+              <EditUnitForm
+                unitId={profile.unit_id}
+                currentName={unitName}
+                currentDescription={unitDescription}
+                unitColor={unitColors.primary}
+              />
+            </div>
+          </div>
+
+          {/* GODFATHER ORDERS */}
           {godTasks.length > 0 && (
             <div className="panel">
               <span className="panel-corner-tr" />

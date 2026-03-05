@@ -6,14 +6,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Users, Mail, UserPlus, LayoutDashboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-
-const UNIT_COLORS: Record<string, { primary: string; text: string }> = {
-  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
-  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
-  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
-  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
-  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
-};
+import { getUnitColor } from "@/lib/unitColors";
 
 const Header = () => {
   const pathname = usePathname() ?? "";
@@ -21,7 +14,19 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [unitName, setUnitName] = useState<string | null>(null);
+  const [unitId, setUnitId] = useState<string | null>(null);
   const supabase = createClient();
+
+  const fetchProfile = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("unit_id, units(name)")
+      .eq("id", userId)
+      .single();
+    setUnitId(profile?.unit_id ?? null);
+    // @ts-ignore — joined relation
+    setUnitName(profile?.units?.name ?? null);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -29,14 +34,7 @@ const Header = () => {
         data: { user },
       } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles_with_units")
-          .select("unit_name")
-          .eq("id", user.id)
-          .single();
-        setUnitName(profile?.unit_name ?? null);
-      }
+      if (user) await fetchProfile(user.id);
       setLoading(false);
     };
 
@@ -47,14 +45,10 @@ const Header = () => {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles_with_units")
-          .select("unit_name")
-          .eq("id", session.user.id)
-          .single();
-        setUnitName(profile?.unit_name ?? null);
+        await fetchProfile(session.user.id);
       } else {
         setUnitName(null);
+        setUnitId(null);
       }
     });
 
@@ -72,7 +66,7 @@ const Header = () => {
     { href: "/contact", label: "Contact", icon: Mail },
   ];
 
-  const unitColors = unitName ? UNIT_COLORS[unitName] : null;
+  const unitColors = getUnitColor(unitId);
 
   return (
     <>
@@ -300,7 +294,7 @@ const Header = () => {
               <span className="gf-logo-wordmark">the name.</span>
             </Link>
 
-            {!loading && isAuthenticated && unitName && unitColors && (
+            {!loading && isAuthenticated && unitName && unitId && (
               <span
                 className="gf-unit-badge"
                 style={{

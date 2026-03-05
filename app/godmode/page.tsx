@@ -2,15 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import SignOut from "@/components/SignOut";
 import GodmodeTaskForm from "@/components/GodmodeTaskForm";
-
-const UNIT_COLORS: Record<string, { primary: string; text: string }> = {
-  Einherjar: { primary: "#6FF3FF", text: "#6FF3FF" },
-  "Legio X Equestris": { primary: "#8A3FFC", text: "#8A3FFC" },
-  Myrmidons: { primary: "#A6FF00", text: "#A6FF00" },
-  "Narayani Sena": { primary: "#FFC83D", text: "#FFC83D" },
-  Spartans: { primary: "#FF6A00", text: "#FF6A00" },
-};
-const DEFAULT_COLOR = { primary: "#C8A84B", text: "#C8A84B" };
+import { getUnitColor } from "@/lib/unitColors";
 
 export default async function GodmodePage() {
   const supabase = await createClient();
@@ -42,18 +34,12 @@ export default async function GodmodePage() {
     .order("created_at", { ascending: false });
 
   const totalMembers = allMembers?.length ?? 0;
-  const totalTasks = allTasks?.length ?? 0;
   const pendingCount =
     allTasks?.filter((t) => t.status === "pending_approval").length ?? 0;
   const unassignedCount =
     allTasks?.filter((t) => t.status === "unassigned").length ?? 0;
-  const completedCount =
-    allTasks?.filter((t) => t.status === "completed").length ?? 0;
-
   const unassignedTasks =
     allTasks?.filter((t) => t.status === "unassigned") ?? [];
-  const pendingTasks =
-    allTasks?.filter((t) => t.status === "pending_approval") ?? [];
 
   return (
     <div className="ow-root">
@@ -136,12 +122,10 @@ export default async function GodmodePage() {
 
       <main className="ow-main">
         <div className="ow-stack">
-          {/* HEADER */}
           <div>
             <p className="page-eyebrow">The Seat of Power</p>
             <h1 className="page-title">
-              The Godfather
-              <em>All-Seeing Command</em>
+              The Godfather<em>All-Seeing Command</em>
             </h1>
             <p className="page-sub">
               You see everything. Every soldier, every order, every whisper
@@ -149,7 +133,6 @@ export default async function GodmodePage() {
             </p>
           </div>
 
-          {/* GLOBAL STATS */}
           <div className="stats-grid">
             {[
               {
@@ -198,7 +181,6 @@ export default async function GodmodePage() {
             ))}
           </div>
 
-          {/* ISSUE ORDER TO UNIT */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -214,7 +196,7 @@ export default async function GodmodePage() {
               <h2 className="section-title">Issue an Order to a Unit</h2>
               <p
                 style={{
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Cormorant Garamond',serif",
                   fontSize: ".88rem",
                   fontStyle: "italic",
                   color: "rgba(201,180,154,.4)",
@@ -232,7 +214,6 @@ export default async function GodmodePage() {
             </div>
           </div>
 
-          {/* UNASSIGNED ORDERS — pending leader assignment */}
           {unassignedTasks.length > 0 && (
             <div className="panel">
               <span className="panel-corner-tr" />
@@ -249,9 +230,7 @@ export default async function GodmodePage() {
                 <div className="task-list">
                   {unassignedTasks.map((task) => {
                     const unit = units?.find((u) => u.id === task.unit_id);
-                    const uc = unit
-                      ? (UNIT_COLORS[unit.name] ?? DEFAULT_COLOR)
-                      : DEFAULT_COLOR;
+                    const uc = getUnitColor(task.unit_id);
                     return (
                       <div key={task.id} className="task-row">
                         <div
@@ -268,7 +247,7 @@ export default async function GodmodePage() {
                               className="task-who"
                               style={{ color: uc.primary }}
                             >
-                              — {unit?.name}
+                              — {unit?.name ?? "Unknown Unit"}
                             </span>
                             <span className="task-who">
                               leader must assign to a soldier
@@ -293,7 +272,6 @@ export default async function GodmodePage() {
             </div>
           )}
 
-          {/* UNITS OVERVIEW */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -308,7 +286,7 @@ export default async function GodmodePage() {
               <h2 className="section-title">All Units</h2>
               <div className="units-overview">
                 {units?.map((unit) => {
-                  const uc = UNIT_COLORS[unit.name] ?? DEFAULT_COLOR;
+                  const uc = getUnitColor(unit.id);
                   const members =
                     allMembers?.filter((m) => m.unit_id === unit.id) ?? [];
                   const leaders = members.filter((m) => m.is_leader);
@@ -370,7 +348,6 @@ export default async function GodmodePage() {
             </div>
           </div>
 
-          {/* GLOBAL ROSTER */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -398,9 +375,7 @@ export default async function GodmodePage() {
                   <tbody>
                     {allMembers?.map((m) => {
                       const unit = units?.find((u) => u.id === m.unit_id);
-                      const uc = unit
-                        ? (UNIT_COLORS[unit.name] ?? DEFAULT_COLOR)
-                        : DEFAULT_COLOR;
+                      const uc = getUnitColor(m.unit_id);
                       return (
                         <tr key={m.id}>
                           <td>
@@ -461,7 +436,6 @@ export default async function GodmodePage() {
             </div>
           </div>
 
-          {/* ALL TASKS */}
           <div className="panel">
             <span className="panel-corner-tr" />
             <span className="panel-corner-bl" />
@@ -479,9 +453,7 @@ export default async function GodmodePage() {
                 <div className="task-list">
                   {allTasks.slice(0, 50).map((task) => {
                     const unit = units?.find((u) => u.id === task.unit_id);
-                    const uc = unit
-                      ? (UNIT_COLORS[unit.name] ?? DEFAULT_COLOR)
-                      : DEFAULT_COLOR;
+                    const uc = getUnitColor(task.unit_id);
                     const statusColors: Record<string, string> = {
                       unassigned: "#E07070",
                       active: "var(--gold)",
@@ -524,7 +496,7 @@ export default async function GodmodePage() {
                               className="task-who"
                               style={{ color: uc.primary }}
                             >
-                              — {unit?.name}
+                              — {unit?.name ?? "Unknown"}
                             </span>
                             {task.created_by_owner && (
                               <span
@@ -556,7 +528,6 @@ export default async function GodmodePage() {
             </div>
           </div>
 
-          {/* SIGNOUT */}
           <div
             className="notice"
             style={{

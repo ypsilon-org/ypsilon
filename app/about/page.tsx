@@ -1,45 +1,89 @@
 "use client";
 
 import Link from "next/link";
+import { UNIT_ID_COLORS } from "@/lib/unitColors";
 
-const UNIT_COLORS = {
-  Einherjar: { primary: "#6FF3FF", accent: "#29848e" },
-  "Legio X Equestris": { primary: "#8A3FFC", accent: "#5A23B0" },
-  Myrmidons: { primary: "#A6FF00", accent: "#5FAE00" },
-  "Narayani Sena": { primary: "#FFC83D", accent: "#C99700" },
-  Spartans: { primary: "#FF6A00", accent: "#C94F00" },
-};
-
+// Static unit data — descriptions won't change with renames.
+// Colors keyed by UUID so they stay in sync with the rest of the app.
 const units = [
   {
-    name: "Einherjar",
-    description: "Warriors chosen for valor and honor",
+    id: "5cda9c6d-3f43-4f39-b771-8e2be8d098fa",
+    name: "Janissaries",
+    description:
+      "Sultan’s iron fist, a disciplined corps of elite musketeers and master siege-breakers",
     fullDescription:
-      "Named after the legendary Norse warriors who dwell in Valhalla, the Einherjar embody courage, loyalty, and the warrior spirit. Members of this unit value honor above all else.",
+      "Forged as Europe’s first professional standing army, the Janissaries were renowned for their rigorous discipline, early mastery of firearms, and fierce loyalty to the Ottoman throne.",
   },
   {
+    id: "b7dddd87-4a44-45fd-8bc2-2d3dc00fa95c",
+    name: "Spartans",
+    description: "Disciplined, resilient, and relentless",
+    fullDescription:
+      "Embodying the spirit of ancient Sparta, these warriors are known for their discipline, physical prowess, and the famous Spartan resolve to never surrender.",
+  },
+  {
+    id: "c53fe16c-fb92-48c4-9ede-9135f6cb2d00",
     name: "Legio X Equestris",
     description: "Strategic minds and tactical excellence",
     fullDescription:
       "Following in the footsteps of Caesar's most trusted legion, this unit represents discipline, strategy, and tactical mastery. Members excel in planning and execution.",
   },
   {
-    name: "Myrmidons",
-    description: "Elite fighters and skilled warriors",
+    id: "dce3f79c-602b-409f-99c2-a8f9601c0de9",
+    name: "Einherjar",
+    description: "Warriors chosen for valor and honor",
     fullDescription:
-      "Drawing inspiration from Achilles' legendary warriors, the Myrmidons are known for their exceptional combat prowess and unwavering dedication to excellence in every endeavor.",
+      "Named after the legendary Norse warriors who dwell in Valhalla, the Einherjar embody courage, loyalty, and the warrior spirit. Members of this unit value honor above all else.",
   },
   {
+    id: "fb549072-d2eb-4107-9922-07d6bbf70699",
     name: "Narayani Sena",
     description: "Divine warriors with unbreakable resolve",
     fullDescription:
       "Named after the celestial army of Hindu mythology, this unit represents spiritual strength, wisdom, and an indomitable will to overcome any challenge.",
   },
+];
+
+const generals = [
   {
-    name: "Spartans",
-    description: "Disciplined, resilient, and relentless",
-    fullDescription:
-      "Embodying the spirit of ancient Sparta, these warriors are known for their discipline, physical prowess, and the famous Spartan resolve to never surrender.",
+    numeral: "I",
+    name: "Odin",
+    unitId: "dce3f79c-602b-409f-99c2-a8f9601c0de9", // Einherjar
+    unitLabel: "Einherjar",
+    epithet:
+      "The Allfather who sacrificed an eye for wisdom — he sees what others cannot, and leads with the calm authority of one who has already glimpsed the end.",
+  },
+  {
+    numeral: "II",
+    name: "Caesar",
+    unitId: "c53fe16c-fb92-48c4-9ede-9135f6cb2d00", // Legio X
+    unitLabel: "Legio X Equestris",
+    epithet:
+      "He crossed the Rubicon alone. A strategist without equal — Caesar does not wait for permission to make history.",
+  },
+  {
+    numeral: "III",
+    name: "Achilles",
+    unitId: "5cda9c6d-3f43-4f39-b771-8e2be8d098fa", // Janissaries
+    unitLabel: "Janissaries",
+    epithet:
+      "The swiftest, the deadliest — a warrior who chose a short life of glory over a long life of obscurity. His rage is a weapon; his loyalty, unbreakable.",
+  },
+  {
+    numeral: "IV",
+    name: "Krishna",
+    unitId: "fb549072-d2eb-4107-9922-07d6bbf70699", // Narayani Sena
+    unitLabel: "Narayani Sena",
+    epithet:
+      "On the eve of the greatest war ever fought, he delivered the Gita. Warrior, philosopher, god — he leads not just armies but souls.",
+  },
+  {
+    numeral: "V",
+    name: "Hercules",
+    unitId: "b7dddd87-4a44-45fd-8bc2-2d3dc00fa95c", // Spartans
+    unitLabel: "Spartans",
+    epithet:
+      "Twelve labors. Twelve impossibilities. Completed. He does not bend to the weight of the world — he lifts it.",
   },
 ];
 
@@ -56,49 +100,6 @@ const coreValues = [
   {
     title: "Growth",
     body: "Continuously learning and evolving as individuals",
-  },
-];
-
-const generals = [
-  {
-    numeral: "I",
-    name: "Odin",
-    unit: "Einherjar",
-    color: "#6FF3FF",
-    epithet:
-      "The Allfather who sacrificed an eye for wisdom — he sees what others cannot, and leads with the calm authority of one who has already glimpsed the end.",
-  },
-  {
-    numeral: "II",
-    name: "Caesar",
-    unit: "Legio X Equestris",
-    color: "#8A3FFC",
-    epithet:
-      "He crossed the Rubicon alone. A strategist without equal — Caesar does not wait for permission to make history.",
-  },
-  {
-    numeral: "III",
-    name: "Achilles",
-    unit: "Myrmidons",
-    color: "#A6FF00",
-    epithet:
-      "The swiftest, the deadliest — a warrior who chose a short life of glory over a long life of obscurity. His rage is a weapon; his loyalty, unbreakable.",
-  },
-  {
-    numeral: "IV",
-    name: "Krishna",
-    unit: "Narayani Sena",
-    color: "#FFC83D",
-    epithet:
-      "On the eve of the greatest war ever fought, he delivered the Gita. Warrior, philosopher, god — he leads not just armies but souls.",
-  },
-  {
-    numeral: "V",
-    name: "Hercules",
-    unit: "Spartans",
-    color: "#FF6A00",
-    epithet:
-      "Twelve labors. Twelve impossibilities. Completed. He does not bend to the weight of the world — he lifts it.",
   },
 ];
 
@@ -160,7 +161,6 @@ export default function AboutPage() {
           mix-blend-mode: overlay;
         }
 
-        /* ─── HERO ─── */
         .hero {
           position: relative;
           min-height: 72vh;
@@ -263,7 +263,6 @@ export default function AboutPage() {
           line-height: 1.7;
         }
 
-        /* ─── SHARED ─── */
         .section-eyebrow {
           font-family: 'Cormorant Garamond', serif;
           font-size: 0.72rem;
@@ -298,7 +297,6 @@ export default function AboutPage() {
           font-weight: 400;
         }
 
-        /* ─── INTERSTITIAL ─── */
         .interstitial {
           text-align: center;
           padding: 2rem 0 1.5rem;
@@ -307,7 +305,6 @@ export default function AboutPage() {
           letter-spacing: 1.2em;
         }
 
-        /* ─── MISSION ─── */
         .mission {
           padding: clamp(4rem, 9vh, 8rem) 6vw;
           max-width: 1300px;
@@ -385,7 +382,6 @@ export default function AboutPage() {
           line-height: 1.6;
         }
 
-        /* ─── UNITS ─── */
         .units-section {
           padding: clamp(4rem, 9vh, 8rem) 6vw;
           max-width: 1300px;
@@ -463,7 +459,6 @@ export default function AboutPage() {
           opacity: 0.65;
         }
 
-        /* ─── GENERALS ─── */
         .generals-section {
           padding: clamp(4rem, 9vh, 8rem) 6vw;
           max-width: 1300px;
@@ -554,7 +549,6 @@ export default function AboutPage() {
           opacity: 0.62;
         }
 
-        /* ─── HOW IT WORKS ─── */
         .how-section {
           padding: clamp(5rem, 10vh, 9rem) 6vw;
           background: linear-gradient(to bottom, var(--ink) 0%, #0C0906 50%, var(--ink) 100%);
@@ -633,7 +627,6 @@ export default function AboutPage() {
           opacity: 0.65;
         }
 
-        /* ─── CTA ─── */
         .cta-section {
           padding: clamp(5rem, 10vh, 9rem) 6vw;
           max-width: 1100px;
@@ -698,7 +691,6 @@ export default function AboutPage() {
           position: relative;
         }
 
-        /* ─── BUTTONS ─── */
         .btn-primary {
           display: inline-block;
           font-family: 'Cormorant Garamond', serif;
@@ -745,7 +737,6 @@ export default function AboutPage() {
         }
         .btn-ghost:hover { opacity: 1; }
 
-        /* ─── FOOTER ─── */
         footer {
           border-top: 1px solid rgba(200,168,75,0.09);
           padding: 3.2rem 6vw;
@@ -773,7 +764,6 @@ export default function AboutPage() {
         }
       `}</style>
 
-      {/* ─── HERO ─── */}
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-vignette" />
@@ -798,7 +788,6 @@ export default function AboutPage() {
 
       <div className="interstitial">· · ·</div>
 
-      {/* ─── MISSION ─── */}
       <section className="mission">
         <div className="mission-grid">
           <div>
@@ -834,7 +823,6 @@ export default function AboutPage() {
 
       <div className="interstitial">· · ·</div>
 
-      {/* ─── UNITS ─── */}
       <section className="units-section">
         <div className="units-header">
           <p className="section-eyebrow">The Orders</p>
@@ -845,9 +833,9 @@ export default function AboutPage() {
         </div>
         <div className="units-grid">
           {units.map((unit) => {
-            const colors = UNIT_COLORS[unit.name as keyof typeof UNIT_COLORS];
+            const colors = UNIT_ID_COLORS[unit.id] ?? { primary: "#C8A84B" };
             return (
-              <div key={unit.name} className="unit-card">
+              <div key={unit.id} className="unit-card">
                 <div
                   className="unit-top-bar"
                   style={{
@@ -868,7 +856,6 @@ export default function AboutPage() {
 
       <div className="interstitial">· · ·</div>
 
-      {/* ─── THE FIVE GENERALS ─── */}
       <section className="generals-section">
         <div className="generals-header">
           <p className="section-eyebrow">The High Command</p>
@@ -878,29 +865,32 @@ export default function AboutPage() {
           </h2>
         </div>
         <div className="generals-grid">
-          {generals.map((g) => (
-            <div key={g.name} className="general-card">
-              <div
-                className="general-top-bar"
-                style={{
-                  background: `linear-gradient(to right, ${g.color}, transparent)`,
-                }}
-              />
-              <div className="general-numeral">{g.numeral}</div>
-              <h3 className="general-name" style={{ color: g.color }}>
-                {g.name}
-              </h3>
-              <p className="general-unit-label">{g.unit}</p>
-              <div className="general-rule" />
-              <p className="general-epithet">{g.epithet}</p>
-            </div>
-          ))}
+          {generals.map((g) => {
+            const color = (UNIT_ID_COLORS[g.unitId] ?? { primary: "#C8A84B" })
+              .primary;
+            return (
+              <div key={g.name} className="general-card">
+                <div
+                  className="general-top-bar"
+                  style={{
+                    background: `linear-gradient(to right, ${color}, transparent)`,
+                  }}
+                />
+                <div className="general-numeral">{g.numeral}</div>
+                <h3 className="general-name" style={{ color }}>
+                  {g.name}
+                </h3>
+                <p className="general-unit-label">{g.unitLabel}</p>
+                <div className="general-rule" />
+                <p className="general-epithet">{g.epithet}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       <div className="interstitial">· · ·</div>
 
-      {/* ─── HOW IT WORKS ─── */}
       <section className="how-section">
         <div className="how-inner">
           <div className="how-header">
@@ -923,7 +913,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
       <section className="cta-section">
         <div className="cta-inner">
           <span className="cta-tr" />
@@ -948,7 +937,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
       <footer>
         <span className="footer-brand">the name.</span>
         <span className="footer-copy">
