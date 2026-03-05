@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/navigation/header";
 import localFont from "next/font/local";
+import SmoothFollower from "@/components/SmoothFollower";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${modernSociety.variable} antialiased`}
       >
+        <SmoothFollower />
         <Header />
         {children}
       </body>
