@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function HomePage() {
-  const heroContentRef = useRef(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
